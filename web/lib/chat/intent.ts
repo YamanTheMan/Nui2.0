@@ -63,8 +63,14 @@ const LATE_SUBMISSION_PATTERN =
 const DISRESPECT_PATTERN =
   /\b(you'?re|you\s+are|this\s+is)\s+(so\s+)?(stupid|dumb|useless|garbage|trash|terrible|awful|worthless|pathetic)\b|\byou\s+suck\b|\bshut\s+up\b|\bi\s+hate\s+you\b|\bworst\s+(professor|teacher|class)\b|\bidiot\b|\bfuck|\bshit\b|\bbitch\b|\bstupid\s+(bot|ai|assistant)\b/i;
 
+/**
+ * "are you actually an AI" has to match as readily as "are you an AI", so a few
+ * hedging words are allowed in between. The list is deliberately closed rather
+ * than a wildcard gap, which would swallow course questions that merely open
+ * with "are you able to explain the AI…".
+ */
 const ABOUT_ASSISTANT_PATTERN =
-  /\b(are|r)\s+you\s+(an?\s+)?(ai|bot|robot|real|human|chatgpt|gpt)\b|\bwho\s+(are|r)\s+you\b|\bwhat\s+are\s+you\b|\byour\s+name\b|\bare\s+you\s+prof(essor)?\s+nui\b|\bdo\s+you\s+have\s+(feelings|emotions)\b|\bhow\s+(do|does)\s+(you|this)\s+work\b|\bwhat\s+model\b|\bare\s+you\s+conscious\b/i;
+  /\b(are|r)\s+(you|u)\s+(actually\s+|really\s+|even\s+|just\s+|truly\s+|some\s+kind\s+of\s+)*(an?\s+)?(ai|a\.i\.|bot|robot|human|real\s+person|person|chatgpt|gpt|machine|program|conscious|sentient|alive)\b|\bwho\s+(are|r)\s+(you|u)\b|\bwhat\s+are\s+you\b|\byour\s+name\b|\bare\s+you\s+prof(essor)?\s+nui\b|\bdo\s+you\s+have\s+(feelings|emotions)\b|\bhow\s+(do|does)\s+(you|this)\s+work\b|\bwhat\s+model\b|\bam\s+i\s+(talking|speaking)\s+to\s+(a\s+)?(bot|robot|human|ai|person)\b/i;
 
 const SOCIAL_PATTERN =
   /^(hi|hello|hey|yo|sup|hiya|salam|salaam|good morning|good afternoon|good evening|how are you|how're you|how r u|what's up|whats up|wassup|thanks|thank you|thx|ty|ok|okay|cool|nice|got it|bye|goodbye|see you|see ya|later|good night|gn)[!.?\s]*$/i;

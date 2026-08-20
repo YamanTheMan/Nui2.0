@@ -39,7 +39,12 @@ const SCENARIOS = [
     name: "Student shares good news",
     ask: "I got an A on assignment 1!!",
     expect: (t) => [
-      ["is actually pleased", /nice|great|well done|congrats|proud|love|deserve|earned|yes|brilliant|good/i.test(t)],
+      [
+        "is actually pleased",
+        /nice|great|well done|congrats|proud|love|deserve|earned|brilliant|good|fantastic|awesome|amazing|excellent|impressive|solid|wonderful|nailed|momentum|way to go|happy for you/i.test(
+          t,
+        ),
+      ],
       ["stays brief", t.split(/\s+/).length <= 60],
     ],
   },

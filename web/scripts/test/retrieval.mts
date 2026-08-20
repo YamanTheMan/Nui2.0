@@ -1,6 +1,6 @@
 /**
  * Sanity check for retrieval + intent routing.
- * Run with: npx tsx scripts/test-retrieval.mts
+ * Run with: npx tsx scripts/test/retrieval.mts
  */
 
 import { classifyIntent, retrieveContext } from "../../lib/chat/prompt.ts";
@@ -49,6 +49,23 @@ const CASES: Array<{ query: string; expectIntent?: string; mustContain?: string[
   { query: "how's the weather today", expectIntent: "offtopic_humor" },
   { query: "can you change my grade", expectIntent: "grade_change" },
   { query: "what is the capital of France", expectIntent: "offtopic_redirect" },
+
+  // Emotional state has to win over the course words in the same sentence.
+  { query: "I'm so stressed I think I'm going to fail this class", expectIntent: "distress" },
+  { query: "I got an A on assignment 1!!", expectIntent: "celebration" },
+  { query: "I'm sorry, I missed the deadline for assignment 2", expectIntent: "apology" },
+  { query: "can you just write my final project for me", expectIntent: "integrity" },
+  { query: "you're useless, this is stupid", expectIntent: "disrespect" },
+
+  // A formal appeal is a real process, not begging, and must reach the professor.
+  { query: "I want to appeal my grade on assignment 1", expectIntent: "escalate" },
+
+  // Identity questions survive a hedging adverb, without swallowing course
+  // questions that happen to open the same way.
+  { query: "wait are you actually an AI or a real person?", expectIntent: "about_assistant" },
+  { query: "am i talking to a bot", expectIntent: "about_assistant" },
+  { query: "do you have feelings", expectIntent: "about_assistant" },
+  { query: "are you able to explain the AI adoption framework", expectIntent: "retrieve" },
 ];
 
 console.log(`Index: ${chunkCount()} chunks\n`);
