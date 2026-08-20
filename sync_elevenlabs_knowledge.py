@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -16,10 +17,14 @@ ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1"
 
 COURSE_KB_FOLDER_NAME = "IS 67-382 Digital Transformation"
 
-# The agent prompt writes laughter as audio tags like [laughs]. Only the v3
-# voices speak those as real sound; Flash and Turbo read the brackets aloud.
-# Changing this back means stripping the tags from elevenlabs_agent_prompt.txt.
-VOICE_MODEL = "eleven_v3_conversational"
+# Flash keeps the original cloned voice. The v3 models speak audio tags like
+# [laughs] as real laughter, but they re-colour the whole delivery and no longer
+# sound like Prof Nui, so the prompt writes laughter as a spoken "Ha" instead.
+# Only switch to a v3 model together with a prompt that uses tags — _check_prompt
+# below enforces that pairing.
+VOICE_MODEL = "eleven_flash_v2"
+
+AUDIO_TAG_PATTERN = re.compile(r"\[(laughs?|chuckles?|sighs?|warmly|firmly|serious|thoughtful|whispers?|excited|sad|angry)\]", re.I)
 
 
 def _load_first_message() -> str:
@@ -42,9 +47,25 @@ def _dynamic_variable_placeholders() -> dict[str, str]:
 def _load_system_prompt() -> str:
     text = PROMPT_FILE.read_text(encoding="utf-8")
     parts = text.split("---")
-    if len(parts) >= 2:
-        return parts[1].strip()
-    return text.strip()
+    prompt = parts[1].strip() if len(parts) >= 2 else text.strip()
+    _check_prompt(prompt)
+    return prompt
+
+
+def _check_prompt(prompt: str) -> None:
+    """Refuses to pair a tagged prompt with a voice that would speak the brackets.
+
+    Only the v3 models turn ``[laughs]`` into real laughter. On Flash or Turbo the
+    same prompt makes her say the word "laughs" out loud, which is worse than no
+    laugh at all — and it is silent until someone actually listens.
+    """
+    tags = sorted({match.group(0).lower() for match in AUDIO_TAG_PATTERN.finditer(prompt)})
+    if tags and "v3" not in VOICE_MODEL:
+        raise RuntimeError(
+            f"The prompt uses audio tags {', '.join(tags)} but VOICE_MODEL is "
+            f"{VOICE_MODEL}, which reads brackets aloud. Either remove the tags "
+            f"from {PROMPT_FILE} or switch VOICE_MODEL to a v3 voice."
+        )
 
 
 def _file_hash(path: Path) -> str:

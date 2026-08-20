@@ -104,16 +104,24 @@ are written to match, and both drive the same four-stage grade-change arc — th
 browser counts the attempts and feeds the stage to the agent, so the escalation is
 defined in one place and the voice can't drift from the text.
 
-It runs on the **`eleven_v3_conversational`** voice, which speaks audio tags such as
-`[laughs]` and `[warmly]` as real sound. That is why the prompt uses tags instead of
-spelling out "ha ha ha", which the older Flash voice pronounced literally and made
-her sound synthetic.
+It runs on **`eleven_flash_v2`**, set by `VOICE_MODEL` in
+`sync_elevenlabs_knowledge.py`. The sync reads the agent's current voice settings and
+swaps only the model, so the tuned voice, speed and stability survive the update.
 
-If you ever move the agent back to a Flash or Turbo voice, strip the bracketed tags
-from the prompt first — those models read the brackets aloud. The model is set by
-`VOICE_MODEL` in `sync_elevenlabs_knowledge.py`, which reads the agent's current
-voice settings and swaps only the model so the tuned voice, speed and stability
-survive the update.
+**On laughter and the voice model.** Only the `eleven_v3*` models speak audio tags
+like `[laughs]` as real laughter; Flash and Turbo read the brackets aloud as the word
+"laughs". v3 was tried and does produce a genuinely human laugh, but it re-colours the
+whole delivery and stopped sounding like Prof Nui's cloned voice, which matters more
+than the laugh. So the agent stays on Flash and the prompt writes laughter as a single
+spoken "Ha" folded into the sentence. Repeated syllables — "ha ha ha" — are what make
+a synthesised laugh sound mechanical, so the prompt bans them explicitly.
+
+If you ever do move to a v3 voice, put the tags back in the same change. `_check_prompt`
+refuses to sync a tagged prompt to a non-v3 model, because that mistake is silent until
+somebody listens to a live session.
+
+Use `node scripts/ops/voice-samples.mjs` to render the same line across models and
+settings into `voice-samples/` when you want to compare by ear.
 
 ## The answer cache
 
