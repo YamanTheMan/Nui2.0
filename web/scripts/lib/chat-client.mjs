@@ -75,6 +75,7 @@ export async function askChat({ base, question, profile, history = [] }) {
   const raw = await response.text();
   let text = "";
   let sessionEndPart = false;
+  let emailOffer = null;
   let errored = null;
 
   for (const line of raw.split("\n")) {
@@ -85,6 +86,7 @@ export async function askChat({ base, question, profile, history = [] }) {
       const event = JSON.parse(payload);
       if (event.type === "text-delta") text += event.delta ?? "";
       if (event.type === "data-session-end") sessionEndPart = true;
+      if (event.type === "data-email-offer") emailOffer = event.data ?? null;
       if (event.type === "error") errored = event.errorText ?? "stream error";
     } catch {
       // ignore keep-alive noise
@@ -97,6 +99,7 @@ export async function askChat({ base, question, profile, history = [] }) {
     text: plain(text.trim()),
     sessionEnd,
     sessionEndPart,
+    emailOffer,
     cache,
     elapsed: Date.now() - started,
     messages,

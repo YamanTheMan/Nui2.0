@@ -4,6 +4,7 @@
  */
 
 import { getCoreFactsBlock, getFactsForQuery } from "./course-facts";
+import { detectEmailNeed, PROF_EMAIL, type EmailNeed, type EmailReason } from "./email";
 import {
   classifyIntent,
   wantsCourseContext,
@@ -160,6 +161,32 @@ const MANDATORY_DETAILS: Array<[RegExp, string]> = [
   ],
 ];
 
+/** Situations where the student is describing a circumstance, not asking about the work. */
+const SITUATION_NOT_COURSEWORK = new Set<EmailReason>([
+  "medical",
+  "absence",
+  "accommodation",
+  "submission_problem",
+  "group_problem",
+  "meeting",
+]);
+
+/**
+ * The offer is made in her own words, but the UI is what actually produces the
+ * draft. So she must not start writing the email in the chat — that would
+ * duplicate the draft and bury it in the middle of a conversation.
+ */
+function emailOfferBlock(summary: string): string {
+  return `THIS ONE NEEDS PROF NUI
+This is ${summary}, which you can't settle yourself — it has to go to Prof Nui at ${PROF_EMAIL}.
+Help them as far as you can first: tell them anything the course material actually says about it.
+Then offer, in one short sentence and in your own words, to write the email for them.
+There's a button under your reply that drafts it, so say something like "want me to write it?"
+and leave it there.
+Do NOT write the email here. No subject line, no "Dear Prof Nui", no draft in the chat.
+Do not promise to send it — they send it themselves.`;
+}
+
 function mandatoryDetailBlock(query: string): string {
   const required = MANDATORY_DETAILS.filter(([pattern]) => pattern.test(query)).map(
     ([, detail]) => detail,
@@ -189,6 +216,8 @@ export type GenerationPlan = {
   query: string;
   /** Set once she has ended the conversation; the session must close after it. */
   endsSession: boolean;
+  /** Set when this belongs with Prof Nui and she should offer to draft the email. */
+  emailNeed: EmailNeed | null;
 };
 
 /**
@@ -216,7 +245,12 @@ export function buildGenerationPlan(
   const query = lastUser?.content ?? "";
   const intent = classifyIntent(query);
 
-  const cacheable = intent === "retrieve" && !FOLLOW_UP_PATTERN.test(query);
+  // Something that has to go to Prof Nui is a description of this student's own
+  // situation, so the answer is theirs alone and must never be served to anyone
+  // else from the cache.
+  const emailNeed = detectEmailNeed(query);
+
+  const cacheable = intent === "retrieve" && !FOLLOW_UP_PATTERN.test(query) && !emailNeed;
 
   // A cacheable answer is shared across students, so it must not be shaped by
   // this student's name or by where they are in the conversation.
@@ -242,10 +276,25 @@ export function buildGenerationPlan(
     endsSession = level === "over";
     temperature = 0.75;
     maxOutputTokens = level === "first" ? 90 : 200;
-    return { system, model, temperature, maxOutputTokens, intent, sources, cacheable: false, query, endsSession };
+    return {
+      system,
+      model,
+      temperature,
+      maxOutputTokens,
+      intent,
+      sources,
+      cacheable: false,
+      query,
+      endsSession,
+      // Someone begging for marks is not writing a considered appeal, and
+      // offering to help would undercut the refusal she just gave.
+      emailNeed: null,
+    };
   }
 
   system += `\n\n${toneFor(intent)}`;
+
+  if (emailNeed) system += `\n\n${emailOfferBlock(emailNeed.summary)}`;
 
   if (intent === "offtopic_humor") {
     system += `\n\n${LAUGHTER_GUIDANCE}`;
@@ -282,7 +331,13 @@ export function buildGenerationPlan(
         '"According to [trusted source]…" and close with the **Source:** citation block.';
     }
 
-    system += mandatoryDetailBlock(query);
+    // Someone explaining a hospital stay that made them miss Assignment 1 is not
+    // asking which country to pick, and reciting the rule at them reads as
+    // tone-deaf. The nudge still applies where the assignment itself is the
+    // question, such as an appeal or a topic approval.
+    if (!emailNeed || !SITUATION_NOT_COURSEWORK.has(emailNeed.reason)) {
+      system += mandatoryDetailBlock(query);
+    }
     maxOutputTokens = intent === "retrieve" ? 600 : 320;
   }
 
@@ -300,5 +355,19 @@ export function buildGenerationPlan(
     temperature = 0.7;
   }
 
-  return { system, model, temperature, maxOutputTokens, intent, sources, cacheable, query, endsSession };
+  // The offer needs room for the answer plus the one-line offer at the end.
+  if (emailNeed) maxOutputTokens = Math.max(maxOutputTokens, 400);
+
+  return {
+    system,
+    model,
+    temperature,
+    maxOutputTokens,
+    intent,
+    sources,
+    cacheable,
+    query,
+    endsSession,
+    emailNeed,
+  };
 }

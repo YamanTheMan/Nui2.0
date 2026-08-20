@@ -190,15 +190,56 @@ Each response carries a transient `data-model` part naming the model that
 actually answered, so a fallback shows up explicitly instead of just looking like
 an unexplained slow reply.
 
+If **both** models come back empty — usually a Groq rate limit — the reply falls
+back to a short apology rather than an empty bubble, which reads as a broken page.
+That apology is never cached, so the next student gets a real answer.
+
+## Writing the email to Prof Nui
+
+Some things genuinely cannot be settled in the chat: an extension, a formal
+appeal, illness, a failed upload, a group partner who vanished. Pointing at an
+email address is where most assistants stop, and it is the exact moment a
+stressed student stalls — they know who to write to, not how to say it.
+
+So she offers to write it. `lib/chat/email.ts` classifies the message into one of
+ten situations, the chat route attaches a `data-email-offer` part to her reply,
+and `components/email-draft-card.tsx` renders a button under it. Pressing it calls
+`/api/email-draft`, which returns a subject and body the student can edit before
+opening a pre-filled **Gmail** compose window (with a `mailto:` fallback for
+anyone not on Gmail). They read it and press send themselves — nothing is sent
+on their behalf.
+
+Two details do most of the work here:
+
+- **The offer has to be rare.** Detection requires both a situation pattern and
+  first-person wording, so "what is the late policy" gets an answer while "I was
+  in hospital and missed the deadline" gets the offer. `topic_approval` and
+  `meeting` are deliberately narrow for the same reason — "can I choose Qatar"
+  and "when are office hours" are ordinary course questions.
+- **The draft must not invent anything.** If the student never gave a date, a
+  reason, or an assignment name, the draft leaves `[a bracketed blank]` for them
+  to fill in. A draft with honest gaps is useful; one with an invented reason
+  could embarrass them in front of their professor.
+
+A question that needs an email describes *this student's* situation, so it is
+never cacheable, and the mandatory-detail nudge is suppressed for the situational
+reasons — reciting the Qatar rule at someone explaining a hospital stay reads as
+tone-deaf. Grade begging never gets the offer; helping draft it would undo the
+refusal she just gave.
+
+The voice agent cannot open Gmail, so it makes the same offer and points the
+student at the chat on the page.
+
 ## Tests
 
 Start the dev server, then point the suites at any URL (they default to
 `http://localhost:3000`):
 
 ```bash
-npm test                                          # all three suites
+npm test                                          # every suite
 npm run test:smoke                                # the facts must be right
 npm run test:scenarios                            # the tone must be right
+npm run test:email                                # the email hand-off, end to end
 npm run test:cache                                # cache behaviour + name-leak safety
 npm run test:tone                                 # prints replies to read, no assertions
 
@@ -214,6 +255,12 @@ npm test -- https://askprofnui.vercel.app         # or point them at production
   and checks each reply for tone as well as content. It then walks all four
   grade-change attempts in one conversation and asserts the arc: a short no, a
   blunt second, an explicit warning, then a real goodbye that closes the session.
+- `test:email` checks both directions: five situations that must produce the offer
+  with the right reason, and five ordinary course questions that must not. It also
+  asserts she never writes the email inline, and that a draft built from a student
+  who gave no reason and no date leaves both as blanks instead of inventing them.
+  It asserts the reply is non-empty too, because the offer is a data part and would
+  otherwise pass green while every bubble rendered blank.
 - `test:cache` asks the same question as two different students and checks the
   repeat is byte-identical, served with `x-answer-cache: hit`, and free of the
   first student's name. It also confirms greetings and follow-ups report `bypass`.
@@ -254,7 +301,10 @@ Every question is routed by intent before it reaches the model:
 - **Grade-change begging** escalates over four turns — a clean no, then blunt, then an
   explicit warning, then the session closes. The wording is free each time; only the
   arc is fixed, so it never sounds like a recording.
-- **Real grade disputes and extensions** are pointed at savanid@cmu.edu.
+- **Real grade disputes and extensions** are pointed at savanid@cmu.edu, and she
+  offers to write the email — see "Writing the email to Prof Nui" above.
+- **"How are you"** gets answered before she moves on. Skipping it for "I'm glad
+  you're here" ignores a question the student actually asked.
 
 ## Repo layout
 

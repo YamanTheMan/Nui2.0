@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef, useState } from "react";
 
 import { sessionOpening, type StudentProfile } from "@/lib/student/profile";
+import EmailDraftCard, { type EmailOffer } from "./email-draft-card";
 import MessageText from "./message-text";
 
 const SUGGESTIONS = [
@@ -61,6 +62,11 @@ export default function ChatPanel({ profile }: { profile: StudentProfile }) {
             if (!text) return null;
 
             const isUser = message.role === "user";
+            const emailOffer = message.parts.find(
+              (part): part is { type: "data-email-offer"; data: EmailOffer } =>
+                part.type === "data-email-offer",
+            )?.data;
+
             return (
               <div
                 key={message.id}
@@ -71,6 +77,7 @@ export default function ChatPanel({ profile }: { profile: StudentProfile }) {
                 }`}
               >
                 <MessageText text={text} />
+                {emailOffer ? <EmailDraftCard offer={emailOffer} profile={profile} /> : null}
               </div>
             );
           })}

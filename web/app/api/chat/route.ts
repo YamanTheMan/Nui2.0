@@ -90,7 +90,7 @@ async function streamAnswer(
   writer: UIMessageStreamWriter,
   plan: GenerationPlan,
   messages: ModelMessage[],
-): Promise<{ answer: string; degraded: boolean }> {
+): Promise<{ answer: string; degraded: boolean; failed: boolean }> {
   let started = false;
   let answer = "";
 
@@ -168,9 +168,26 @@ async function streamAnswer(
   // Nothing written means the large model either stalled past its budget or
   // returned an empty answer. Either way the smaller model is the better bet.
   let degraded = false;
+  let failed = false;
   if (!started && canFallBack) {
     degraded = true;
-    await run(FAST_MODEL);
+    try {
+      await run(FAST_MODEL);
+    } catch {
+      failed = true;
+    }
+  }
+
+  // Both models came back with nothing — rate limited, or an empty stream. An
+  // empty bubble looks like the page is broken, so say something true instead.
+  if (!started) {
+    failed = true;
+    writer.write({ type: "text-start", id: TEXT_PART_ID });
+    started = true;
+    const message =
+      "Sorry, I couldn't reach my notes just then. Give it a second and ask me again.";
+    answer = message;
+    writer.write({ type: "text-delta", id: TEXT_PART_ID, delta: message });
   }
 
   // Surfaces which model actually answered, so a stall is visible in the
@@ -182,7 +199,7 @@ async function streamAnswer(
   });
 
   if (started) writer.write({ type: "text-end", id: TEXT_PART_ID });
-  return { answer, degraded };
+  return { answer, degraded, failed };
 }
 
 export async function POST(req: Request) {
@@ -217,13 +234,27 @@ export async function POST(req: Request) {
       if (cached) {
         await replayCachedAnswer(writer, cached);
       } else {
-        const { answer, degraded } = await streamAnswer(writer, plan, modelMessages);
+        const { answer, degraded, failed } = await streamAnswer(writer, plan, modelMessages);
         // Cache fallback answers too — the questions that stall are the ones
         // that most need caching — but only briefly, so the larger model gets
-        // another chance to replace them.
-        if (cacheKey) {
+        // another chance to replace them. An apology for a rate limit is not an
+        // answer and must never be served to the next student.
+        if (cacheKey && !failed) {
           await setCachedAnswer(cacheKey, answer, degraded ? DEGRADED_TTL_SECONDS : undefined);
         }
+      }
+
+      // This one belongs with the professor. The part persists on the message so
+      // the offer to draft it stays attached to the reply that prompted it.
+      if (plan.emailNeed) {
+        writer.write({
+          type: "data-email-offer",
+          data: {
+            reason: plan.emailNeed.reason,
+            summary: plan.emailNeed.summary,
+            situation: plan.query,
+          },
+        });
       }
 
       // She has closed the conversation. This part persists on the message so

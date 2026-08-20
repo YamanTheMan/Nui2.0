@@ -13,6 +13,7 @@
     "test:routing": "tsx scripts/test/retrieval.mts",
     "test:smoke": "node scripts/test/smoke.mjs",
     "test:scenarios": "node scripts/test/scenarios.mjs",
+    "test:email": "node scripts/test/email.mjs",
     "test:cache": "node scripts/test/cache.mjs",
     "test:tone": "node scripts/test/tone-probe.mjs",
     "warm": "node scripts/ops/warm-cache.mjs"

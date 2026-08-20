@@ -21,6 +21,7 @@ const SUITES = [
   ["routing + retrieval", "retrieval.mts", true],
   ["answer facts", "smoke.mjs", false],
   ["tone + escalation", "scenarios.mjs", false],
+  ["email hand-off", "email.mjs", false],
   ["cache behaviour", "cache.mjs", false],
 ];
 
