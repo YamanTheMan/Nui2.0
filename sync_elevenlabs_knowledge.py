@@ -16,6 +16,11 @@ ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1"
 
 COURSE_KB_FOLDER_NAME = "IS 67-382 Digital Transformation"
 
+# The agent prompt writes laughter as audio tags like [laughs]. Only the v3
+# voices speak those as real sound; Flash and Turbo read the brackets aloud.
+# Changing this back means stripping the tags from elevenlabs_agent_prompt.txt.
+VOICE_MODEL = "eleven_v3_conversational"
+
 
 def _load_first_message() -> str:
     # Empty on purpose: LiveAvatar plays first_message before video/audio is ready,
@@ -60,6 +65,31 @@ def _headers(api_key: str) -> dict[str, str]:
     return {"xi-api-key": api_key}
 
 
+def _voice_settings(api_key: str, agent_id: str) -> dict:
+    """Current voice settings with only the model swapped.
+
+    The agent's voice, speed and stability are tuned in the dashboard. Sending a
+    bare ``{"model_id": ...}`` risks dropping them, so the existing block is read
+    back and returned with just the model replaced.
+    """
+    response = requests.get(
+        f"{ELEVENLABS_API_BASE}/convai/agents/{agent_id}",
+        headers=_headers(api_key),
+        timeout=30,
+    )
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Could not read the agent before updating it ({response.status_code}): {response.text}"
+        )
+
+    tts = dict(response.json().get("conversation_config", {}).get("tts", {}))
+    previous = tts.get("model_id")
+    tts["model_id"] = VOICE_MODEL
+    if previous != VOICE_MODEL:
+        print(f"Voice model: {previous} -> {VOICE_MODEL}")
+    return tts
+
+
 def upload_document(api_key: str, path: Path, display_name: str) -> str:
     with path.open("rb") as handle:
         response = requests.post(
@@ -82,6 +112,7 @@ def upload_document(api_key: str, path: Path, display_name: str) -> str:
 def update_agent(api_key: str, agent_id: str, knowledge_entries: list[dict]) -> None:
     payload = {
         "conversation_config": {
+            "tts": _voice_settings(api_key, agent_id),
             "agent": {
                 "first_message": _load_first_message(),
                 "language": "en",
@@ -95,20 +126,6 @@ def update_agent(api_key: str, agent_id: str, knowledge_entries: list[dict]) -> 
                     "temperature": 0.55,
                     "max_tokens": 160,
                     "knowledge_base": knowledge_entries,
-                    "built_in_tools": {
-                        "end_call": {
-                            "name": "end_call",
-                            "description": (
-                                "REQUIRED on the FOURTH grade-change beg in a session: "
-                                "after you finish the longer goodbye (We're done... Bye...), "
-                                "call this tool immediately to hang up. "
-                                "Also use when the student clearly says goodbye and the conversation is over. "
-                                "Do not keep talking after calling this."
-                            ),
-                            "type": "system",
-                            "params": {"system_tool_type": "end_call"},
-                        }
-                    },
                     "tools": [
                         {
                             "type": "client",
@@ -186,6 +203,57 @@ def update_agent(api_key: str, agent_id: str, knowledge_entries: list[dict]) -> 
         raise RuntimeError(f"Failed to update agent ({response.status_code}): {response.text}")
 
 
+END_CALL_TOOL = {
+    "name": "end_call",
+    "description": (
+        "REQUIRED on the FOURTH time a student asks you to change their grade in one "
+        "session: finish your closing lines, then call this immediately to hang up. "
+        "Also use when the student clearly says goodbye and the conversation is "
+        "genuinely over. Do not keep talking after calling this."
+    ),
+    "type": "system",
+    "params": {"system_tool_type": "end_call"},
+}
+
+
+def _enable_end_call(api_key: str, agent_id: str) -> None:
+    """Re-attaches the hang-up tool, which the main update silently clears.
+
+    Sending the legacy inline ``tools`` list rebuilds the agent's tool config and
+    drops ``built_in_tools`` with it, so end_call has to be set on its own
+    afterwards. Without it she can say the session is over but cannot actually
+    hang up, and the browser is left to force the disconnect on a timer.
+    """
+    response = requests.patch(
+        f"{ELEVENLABS_API_BASE}/convai/agents/{agent_id}",
+        headers={**_headers(api_key), "Content-Type": "application/json"},
+        json={
+            "conversation_config": {
+                "agent": {"prompt": {"built_in_tools": {"end_call": END_CALL_TOOL}}}
+            }
+        },
+        timeout=60,
+    )
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to enable end_call ({response.status_code}): {response.text}"
+        )
+
+    enabled = (
+        response.json()
+        .get("conversation_config", {})
+        .get("agent", {})
+        .get("prompt", {})
+        .get("built_in_tools", {})
+        .get("end_call")
+    )
+    if not enabled:
+        raise RuntimeError(
+            "end_call did not stick. She will not be able to hang up on her own."
+        )
+    print("Hang-up tool (end_call): enabled")
+
+
 def sync_course_knowledge(api_key: str, agent_id: str) -> list[str]:
     manifest = _load_manifest()
     doc_paths = sorted(DOCUMENTS_DIR.glob("*.txt"))
@@ -224,6 +292,7 @@ def sync_course_knowledge(api_key: str, agent_id: str) -> list[str]:
     _save_manifest(manifest)
     print(f"\nUpdating agent with {len(knowledge_entries)} course documents…")
     update_agent(api_key, agent_id, knowledge_entries)
+    _enable_end_call(api_key, agent_id)
     return uploaded
 
 

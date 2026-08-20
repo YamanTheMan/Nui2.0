@@ -11,8 +11,8 @@ from vector_store import vector_search
 
 _groq_client: Groq | None = None
 
-CHAT_MODEL = "llama-3.3-70b-versatile"
-FAST_MODEL = "llama-3.1-8b-instant"
+CHAT_MODEL = "openai/gpt-oss-120b"
+FAST_MODEL = "openai/gpt-oss-20b"
 
 PROF_NUI_BASE = """You are AskProfNui — Prof Nui's warm, witty teaching assistant for digital transformation at CMU-Q. Office hours. Human. Not a chatbot.
 

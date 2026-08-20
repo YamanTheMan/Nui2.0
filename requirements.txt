@@ -1,6 +1,5 @@
-streamlit==1.58.0
+# Python dependencies for the voice-agent admin scripts at the repo root
+# (sync_elevenlabs_knowledge.py, setup_liveavatar.py, fix_elevenlabs_audio.py).
+# The web app itself needs no Python — see web/package.json.
 requests==2.32.3
 python-dotenv==1.0.1
-groq==0.18.0
-chromadb==0.6.3
-fastembed==0.6.0

@@ -55,7 +55,7 @@ def main() -> int:
     print("Success! ElevenLabs key registered with LiveAvatar.\n")
     print(f"ELEVENLABS_SECRET_ID={secret_id}")
     print("\nAdd that line to your .env file, then run:")
-    print("  streamlit run app.py")
+    print("  cd web && npm run dev")
     return 0
 
 

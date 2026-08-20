@@ -1,5 +1,6 @@
 .env
-.streamlit/secrets.toml
+.DS_Store
+**/.streamlit/secrets.toml
 __pycache__/
 *.egg-info/
 .venv/

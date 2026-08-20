@@ -1,0 +1,39 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "sync": "node scripts/content/sync.mjs",
+    "index": "node scripts/content/build-index.mjs",
+    "test": "npm run test:smoke && npm run test:scenarios && npm run test:cache",
+    "test:smoke": "node scripts/test/smoke.mjs",
+    "test:scenarios": "node scripts/test/scenarios.mjs",
+    "test:cache": "node scripts/test/cache.mjs",
+    "test:tone": "node scripts/test/tone-probe.mjs",
+    "warm": "node scripts/ops/warm-cache.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/groq": "^4.0.28",
+    "@ai-sdk/react": "^4.0.69",
+    "@heygen/liveavatar-web-sdk": "^0.0.18",
+    "@vercel/functions": "^3.9.3",
+    "ai": "^7.0.66",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
