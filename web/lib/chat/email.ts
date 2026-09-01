@@ -35,6 +35,15 @@ type Rule = { reason: EmailReason; pattern: RegExp; summary: string };
 const FIRST_PERSON = /\b(i|i'?m|i'?ve|my|me|we|our)\b/i;
 
 /**
+ * "How many absences am I allowed" is a question about the rules; "I was absent
+ * last Tuesday" is a student reporting something. Both are first person and both
+ * mention absence, so without this the policy questions she can answer perfectly
+ * well get an email offer stapled to them.
+ */
+const POLICY_QUESTION =
+  /\b(how many|how much|how do i remove|how can i remove|can i remove|get rid of|what happens if|what happens when|what'?s the (rule|policy)|what is the (rule|policy)|the policy|allowed|counts? as|do i lose)\b/i;
+
+/**
  * Ordered most specific first: a student writing about a hospital stay that made
  * them miss a deadline should be handled as medical, not as a generic extension.
  */
@@ -122,6 +131,10 @@ export function detectEmailNeed(message: string): EmailNeed | null {
   if (!text) return null;
 
   const explicit = EXPLICIT_REQUEST.test(text);
+
+  // Someone who asked outright still gets the offer; otherwise a question about
+  // the rules is answered, not escalated.
+  if (!explicit && POLICY_QUESTION.test(text)) return null;
 
   if (FIRST_PERSON.test(text)) {
     for (const rule of RULES) {

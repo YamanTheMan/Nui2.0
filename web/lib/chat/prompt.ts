@@ -42,15 +42,18 @@ const QUERY_EXPANSIONS: Array<[RegExp, string]> = [
   [/assignment\s*1|country|cultural\s+framework/i, "Assignment 1 cultural framework choose country other than Qatar step 2"],
   [/assignment\s*2|virtual\s+influencer/i, "Assignment 2 IT adoption framework virtual influencers five factors"],
   [/final\s+project/i, "Final project individual 3000 words literature review digital transformation"],
-  [/late|penalt|deduct|dance|missed.*deadline|submitted.*late/i, "late policy 72 hours 20% deduction dance remove late penalties special consideration"],
+  [/late|penalt|deduct|dance|missed.*deadline|submitted.*late/i, "late policy 72 hours 20% deduction dance remove late penalties absences K-Pop song special consideration"],
   [/grade\s+distribut|how\s+much|worth|assessment|percent/i, "grade distribution 40% 40% 10% 10% assessments grading"],
   [/wow|get\s+an?\s+a|how\s+to\s+get|improve|do\s+better/i, "wow factor A grade C average professor says wow"],
-  [/attend|ninja|coffee\s+bean|talabat|race.*class/i, "attendance race arrive before professor ninja Coffee Bean Talabat"],
+  [
+    /attend|ninja|coffee\s+bean|talabat|race.*class|absent|absence|mazeeda|bathroom|leav(e|ing)\s+(the\s+)?class/i,
+    "attendance race arrive before professor ninja Coffee Bean Talabat Mazeeda participation mark 0.5 bathroom absences dance",
+  ],
   [/word\s+count|10\s*percent|10%/i, "word count 10 percent less more 2700 3300 450 550"],
 ];
 
 const POLICY_PATTERN =
-  /assignment|late|penalt|dance|wow\s+factor|grade\s+distribut|word\s+count|attendance|ninja|participation|reflective|final\s+project|deliverable|rubric|deadline|72\s+hour|20\s*%/i;
+  /assignment|late|penalt|dance|wow\s+factor|grade\s+distribut|word\s+count|attendance|ninja|participation|reflective|final\s+project|deliverable|rubric|deadline|72\s+hour|20\s*%|absent|absence|mazeeda/i;
 
 const WEAK_RETRIEVAL_THRESHOLD = 0.55;
 
@@ -139,7 +142,11 @@ function gradeChangeAttemptCount(turns: ChatTurn[]): number {
 const MANDATORY_DETAILS: Array<[RegExp, string]> = [
   [
     /late|penalt|deduct|overdue|past\s+the\s+deadline|missed\s+the\s+deadline/i,
-    'the dance rule — dancing in front of the class at the end of the semester removes ALL accumulated late penalties',
+    'the dance rule — at the end of the semester one dance in front of the class removes ALL accumulated late penalties AND all absences',
+  ],
+  [
+    /absence|absences|absent|miss(ed|ing)?\s+(too\s+many\s+)?class|attendance|ninja/i,
+    'that absences can be cleared by the dance rule — one dance at the end of the semester, to a K-Pop song Prof Nui chooses, removes all absences and all late penalties, but it has to be a proper dance, not a silly one',
   ],
   [
     /assignment\s*1|which\s+country|what\s+country|choose\s+a\s+country|cultural\s+framework/i,

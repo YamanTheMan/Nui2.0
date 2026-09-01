@@ -101,6 +101,7 @@ const RETRIEVE_KEYWORDS = new Set([
   "distribution", "percent", "participation", "deduction", "deadline",
   "reflective", "virtual", "influencer", "deliverables", "grading",
   "attendance", "ninja", "utaut", "hmsam", "schwartz", "trompenaars",
+  "absence", "absences", "absent", "mazeeda", "bathroom", "kpop",
   "guanxi", "casa", "scholarly", "journal",
 ]);
 

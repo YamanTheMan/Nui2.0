@@ -33,8 +33,10 @@ export const LATE_POLICY = `LATE POLICY (from course overview and assignments):
 - Does not apply if special consideration is approved.
 - Special consideration must be requested before the deadline.
 
-LATE PENALTY REMOVAL — THE DANCE RULE:
-At the end of the semester, students have one special opportunity to remove all of their late penalties. If a student dances in front of the class, all of their accumulated late deductions will be removed entirely. This applies to all late penalties from the entire semester.`;
+THE DANCE RULE — REMOVES LATE PENALTIES AND ABSENCES:
+At the end of the semester, students have one special opportunity to clear their record by dancing in front of the class. One dance removes BOTH all accumulated late penalties from the entire semester AND all accumulated absences.
+- Prof Nui chooses the K-Pop song; the student does not pick it.
+- It must be a proper, properly performed dance. She will not accept a silly or half-hearted one, and a joke dance removes nothing.`;
 
 export const ASSIGNMENT_1 = `ASSIGNMENT 1: CULTURAL FRAMEWORK ASSIGNMENT (20%)
 
@@ -128,7 +130,19 @@ THE RACE — Prof Nui's rule:
 DO THE NINJA — NOT OK:
 - "Doing the ninja" = disappearing from class without Prof Nui noticing, then she realizes you're gone.
 - Common excuses: slipped out to Coffee Bean (campus café) for coffee, or left to pick up a Talabat order.
-- You cannot vanish, stay gone a long time, and come back. That counts as leaving class / absence.`;
+- You cannot vanish, stay gone a long time, and come back. That counts as leaving class / absence.
+
+HOW PARTICIPATION IS RECORDED EACH CLASS:
+Mazeeda records a mark every class, as an indicator of how much of the class you attended.
+- 1 = you were there the whole class.
+- 0.5 = you were there but left partway through (you did the ninja).
+- 0 = you were absent.
+
+THE BATHROOM EXCEPTION:
+Going to the bathroom is fine and does not count against you. Prof Nui just does not want you gone for a prolonged period — around 30 minutes or more.
+
+REMOVING ABSENCES:
+Absences can be cleared at the end of the semester by the dance rule — one proper K-Pop dance, to a song Prof Nui chooses, removes all absences as well as all late penalties.`;
 
 export const WORD_COUNT_POLICY = `WORD COUNT POLICY (Prof Nui's rule):
 10% less or 10% more than the stated word count is allowed on written submissions.
@@ -149,9 +163,14 @@ const TOPIC_PATTERNS: Array<[RegExp, string]> = [
   [/self[\s-]?reflect|reflective\s+essay|500[\s-]?word/i, SELF_REFLECTIVE],
   [/grade\s+distribut|how\s+much\s+is|worth\s+\d+%|assessment|what\s+percent|grading\s+breakdown|participation\s+grade/i, GRADE_DISTRIBUTION],
   [/wow\s+factor|how\s+(to|do\s+i)\s+get\s+an?\s+a|get\s+a\s+grade|what\s+is\s+an?\s+a|moving\s+toward/i, WOW_FACTOR],
-  [/late\s+policy|late\s+penalt|deduction|72\s+hour|dance|remove\s+late/i, LATE_POLICY],
+  [/late\s+policy|late\s+penalt|deduction|72\s+hour|dance|remove\s+late|k[\s-]?pop/i, LATE_POLICY],
   [/class\s+participation|participation\s+rubric/i, CLASS_PARTICIPATION],
-  [/attend|attendance|tardy|tardiness|late\s+to\s+class|race|ninja|coffee\s+bean|talabat/i, ATTENDANCE_POLICY],
+  // The dance clears absences as well as late penalties, so anything about
+  // absences, leaving class, or the participation mark has to reach this block.
+  [
+    /attend|attendance|tardy|tardiness|late\s+to\s+class|race|ninja|coffee\s+bean|talabat|absent|absence|mazeeda|bathroom|toilet|restroom|leav(e|ing)\s+(the\s+)?class|participation\s+mark|k[\s-]?pop/i,
+    ATTENDANCE_POLICY,
+  ],
   [/word\s+count|how\s+many\s+words|10\s*percent|10%|2700|3300|450|550/i, WORD_COUNT_POLICY],
 ];
 
