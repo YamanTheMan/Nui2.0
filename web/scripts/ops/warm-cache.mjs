@@ -16,6 +16,11 @@ const QUESTIONS = [
   "what is the attendance policy",
   "what happens if I am late to class",
   "what is the word count policy",
+  "what is the dance policy",
+  "how do I remove my absences",
+  "what is doing the ninja",
+  "how is participation recorded each class",
+  "can I go to the bathroom during class",
   // Grades
   "what is the grade distribution",
   "how is the course graded",
