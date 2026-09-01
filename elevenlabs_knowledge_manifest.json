@@ -1,8 +1,8 @@
 {
   "documents": {
     "D01_course_overview.txt": {
-      "id": "fi5BsAMZQQHOkGf3npzs",
-      "sha256": "64b8b7a8f35f230e0cdda9306a37a3ca93541b96c8249ae3c9d17ad988e8d301",
+      "id": "v4q4S92NNnikPWUhZKhU",
+      "sha256": "9a4f871e70533507399773cc2627d71ae09f25a0f385125365a38db61d424a73",
       "name": "D01 course overview"
     },
     "D02_assignments.txt": {
@@ -41,8 +41,8 @@
       "name": "D08 cultural IT topics"
     },
     "D09_prof_nui_persona.txt": {
-      "id": "OU0EnMBu2I8EbkO4Iy5r",
-      "sha256": "ba1eecfee337685a13ab914cde7ee6ccf7ca708cfe80fab09cb0de7ce775fdfb",
+      "id": "6coJCuV22LLueyOYkYzD",
+      "sha256": "168ed68cad117cee15cb07ebd4096c1caa9485e77f7294f80b5723fb75122b97",
       "name": "D09 prof nui persona"
     },
     "D10_cultural_theories_scholarly.txt": {

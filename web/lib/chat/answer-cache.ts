@@ -17,7 +17,7 @@ import { createHash } from "node:crypto";
 import courseIndex from "../retrieval/course-index.json";
 
 /** Bump when prompt wording changes in a way that should invalidate answers. */
-const PROMPT_VERSION = "v2";
+const PROMPT_VERSION = "v3";
 
 const CONTENT_VERSION = createHash("sha256")
   .update(String(courseIndex.generatedAt))

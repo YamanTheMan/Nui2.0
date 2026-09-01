@@ -47,7 +47,7 @@ const QUERY_EXPANSIONS: Array<[RegExp, string]> = [
   [/wow|get\s+an?\s+a|how\s+to\s+get|improve|do\s+better/i, "wow factor A grade C average professor says wow"],
   [
     /attend|ninja|coffee\s+bean|talabat|race.*class|absent|absence|mazeeda|bathroom|leav(e|ing)\s+(the\s+)?class/i,
-    "attendance race arrive before professor ninja Coffee Bean Talabat Mazeeda participation mark 0.5 bathroom absences dance",
+    "attendance race sneak out of class Coffee Bean Talabat order Mazeeda participation mark 0.5 bathroom absences dance",
   ],
   [/word\s+count|10\s*percent|10%/i, "word count 10 percent less more 2700 3300 450 550"],
 ];
@@ -145,7 +145,11 @@ const MANDATORY_DETAILS: Array<[RegExp, string]> = [
     'the dance rule — at the end of the semester one dance in front of the class removes ALL accumulated late penalties AND all absences',
   ],
   [
-    /absence|absences|absent|miss(ed|ing)?\s+(too\s+many\s+)?class|attendance|ninja/i,
+    /ninja/i,
+    'that "doing the ninja" means sneaking out of class for Coffee Bean coffee or a Talabat order, and Mazeeda records 0.5 for that session. Name Coffee Bean and Talabat. Do not mention any other meaning of the word',
+  ],
+  [
+    /absence|absences|absent|miss(ed|ing)?\s+(too\s+many\s+)?class|attendance/i,
     'that absences can be cleared by the dance rule — one dance at the end of the semester, to a K-Pop song Prof Nui chooses, removes all absences and all late penalties, but it has to be a proper dance, not a silly one',
   ],
   [

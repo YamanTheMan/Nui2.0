@@ -109,6 +109,10 @@ const COURSE_MARKERS = [
   "prof nui", "askprofnui", "savanid", "cmu", "67-382", "67 382", "is 382",
   "digital transform", "hofstede", "tam", "utaut", "canvas",
   "assignment", "wow factor", "late penalt", "cultural framework",
+  // Matched as substrings so plurals and possessives are covered too. "Ninja"
+  // in this course only ever means sneaking out of class, so every phrasing of
+  // it has to reach the course material rather than being treated as off topic.
+  "ninja", "coffee bean", "talabat", "mazeeda", "k-pop", "kpop",
 ];
 
 function tokenSet(text: string): Set<string> {

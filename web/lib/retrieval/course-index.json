@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T09:50:35.913Z",
+  "generatedAt": "2026-09-01T10:34:59.541Z",
   "documentCount": 12,
   "chunks": [
     {
@@ -68,17 +68,17 @@
       "chunkIndex": 12
     },
     {
-      "text": "ATTENDANCE POLICY\n\nOfficial policy: Four absences result in loss of a final letter grade. Six absences result in course failure. Tardiness, leaving early, or leaving for prolonged periods counts as an absence. Failure to attend results in forfeiting any marks for that class activity.\n\nPROF NUI'S ATTENDANCE RULE — THE RACE:\nIf you arrive in class before Prof Nui, you are present — even if she is late 5, 10, or 15 minutes. She was busy somewhere saving digital transformation. You beat her to the room? You are on time. Full stop.\nIf Prof Nui is already in the classroom and you are not? You are late — and late counts toward absence. Students literally race her to class. Run if you have to. It is a sport at this point.\n\nDO THE NINJA — NOT ACCEPTABLE:\nProf Nui uses the phrase \"do the ninja\" when",
+      "text": "ATTENDANCE POLICY\n\nOfficial policy: Four absences result in loss of a final letter grade. Six absences result in course failure. Tardiness, leaving early, or leaving for prolonged periods counts as an absence. Failure to attend results in forfeiting any marks for that class activity.\n\nPROF NUI'S ATTENDANCE RULE — THE RACE:\nIf you arrive in class before Prof Nui, you are present — even if she is late 5, 10, or 15 minutes. She was busy somewhere saving digital transformation. You beat her to the room? You are on time. Full stop.\nIf Prof Nui is already in the classroom and you are not? You are late — and late counts toward absence. Students literally race her to class. Run if you have to. It is a sport at this point.\n\nDO THE NINJA — NOT ACCEPTABLE:\nIn this course, \"ninja\" and \"doing the ninja",
       "source": "D01_course_overview.txt",
       "chunkIndex": 13
     },
     {
-      "text": "a sport at this point.\n\nDO THE NINJA — NOT ACCEPTABLE:\nProf Nui uses the phrase \"do the ninja\" when a student disappears from class without her noticing — then she suddenly realizes they are gone. Maybe they slipped out to Coffee Bean (the campus café) for coffee, or left to pick up a Talabat order. You cannot vanish like a ninja, stay gone a long time, and stroll back in like nothing happened. That counts as leaving class — same as an absence. Stay in class. Your coffee can wait.\n\nHOW PARTICIPATION IS RECORDED EACH CLASS:\nMazeeda records a participation mark for every class. The mark is an indicator of how much of the class you actually attended.\n- 1 — you were there the whole class.\n- 0.5 — you were there but left partway through, i.e. you did the ninja.\n- 0 — you were absent.\n\nTHE BATH",
+      "text": "a sport at this point.\n\nDO THE NINJA — NOT ACCEPTABLE:\nIn this course, \"ninja\" and \"doing the ninja\" mean one thing only: sneaking out of class without Prof Nui noticing, to go to Coffee Bean for coffee or to pick up a Talabat order, and staying gone too long. That is the whole meaning. It is not acceptable. Treat it like leaving class — same as an absence. Stay in class. Your coffee can wait.\n\nHOW PARTICIPATION IS RECORDED EACH CLASS:\nMazeeda records a participation mark for every class. The mark is an indicator of how much of the class you actually attended.\n- 1 — you were there the whole class.\n- 0.5 — you were there but left partway through, i.e. you did the ninja.\n- 0 — you were absent.\n\nTHE BATHROOM EXCEPTION:\nGoing to the bathroom is fine and does not count against you. What Prof N",
       "source": "D01_course_overview.txt",
       "chunkIndex": 14
     },
     {
-      "text": "— you were there but left partway through, i.e. you did the ninja.\n- 0 — you were absent.\n\nTHE BATHROOM EXCEPTION:\nGoing to the bathroom is fine and does not count against you. What Prof Nui does not want is a student leaving for a prolonged period — around 30 minutes or more. A short break is not doing the ninja; disappearing for half the class is.\n\nREMOVING ABSENCES:\nAccumulated absences can be cleared at the end of the semester through the dance policy — see THE DANCE POLICY above. One properly performed K-Pop dance, to a song Prof Nui chooses, removes all absences as well as all late penalties.",
+      "text": ".\n\nTHE BATHROOM EXCEPTION:\nGoing to the bathroom is fine and does not count against you. What Prof Nui does not want is a student leaving for a prolonged period — around 30 minutes or more. A short break is not doing the ninja; disappearing for half the class is.\n\nREMOVING ABSENCES:\nAccumulated absences can be cleared at the end of the semester through the dance policy — see THE DANCE POLICY above. One properly performed K-Pop dance, to a song Prof Nui chooses, removes all absences as well as all late penalties.",
       "source": "D01_course_overview.txt",
       "chunkIndex": 15
     },
@@ -813,12 +813,12 @@
       "chunkIndex": 12
     },
     {
-      "text": "ATTENDANCE — THE RACE AND DOING THE NINJA\n\nProf Nui is humorous but firm about attendance:\n- THE RACE: If you get to class before she does, you are present — even if she is late. If she is already there and you are not, you are late. Students race her to class. Run.\n- DO THE NINJA: When a student vanishes from class without her seeing — maybe to Coffee Bean for coffee or to grab a Talabat order — and stays gone too long, that is \"doing the ninja.\" Not acceptable. Treat it like leaving class.\n- THE MARK: Mazeeda records participation every class — 1 if you stayed the whole time, 0.5 if you did the ninja and left partway, 0 if you were absent. It shows how much of the class you actually attended.\n- THE BATHROOM: Going to the bathroom is fine. Prof Nui just does not want you gone for 30 minut",
+      "text": "ATTENDANCE — THE RACE AND DOING THE NINJA\n\nProf Nui is humorous but firm about attendance:\n- THE RACE: If you get to class before she does, you are present — even if she is late. If she is already there and you are not, you are late. Students race her to class. Run.\n- DO THE NINJA: sneaking out of class without her seeing, to go to Coffee Bean for coffee or to pick up a Talabat order, and staying gone too long. That is the only meaning of \"ninja\" in this class. Not acceptable. Treat it like leaving class.\n- THE MARK: Mazeeda records participation every class — 1 if you stayed the whole time, 0.5 if you did the ninja and left partway, 0 if you were absent. It shows how much of the class you actually attended.\n- THE BATHROOM: Going to the bathroom is fine. Prof Nui just does not want you gon",
       "source": "D09_prof_nui_persona.txt",
       "chunkIndex": 13
     },
     {
-      "text": "ed.\n- THE BATHROOM: Going to the bathroom is fine. Prof Nui just does not want you gone for 30 minutes or so. A quick break is not the ninja.\n\nWhen explaining this, be warm and funny — Prof Nui would laugh about the race and the ninja, but the rule is real.",
+      "text": "ctually attended.\n- THE BATHROOM: Going to the bathroom is fine. Prof Nui just does not want you gone for 30 minutes or so. A quick break is not the ninja.\n\nWhen explaining this, be warm and funny — Prof Nui would laugh about the race and the ninja, but the rule is real.",
       "source": "D09_prof_nui_persona.txt",
       "chunkIndex": 14
     },

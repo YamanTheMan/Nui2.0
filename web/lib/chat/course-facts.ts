@@ -128,9 +128,9 @@ THE RACE — Prof Nui's rule:
 - Students literally race her to class. Run if you have to.
 
 DO THE NINJA — NOT OK:
-- "Doing the ninja" = disappearing from class without Prof Nui noticing, then she realizes you're gone.
-- Common excuses: slipped out to Coffee Bean (campus café) for coffee, or left to pick up a Talabat order.
-- You cannot vanish, stay gone a long time, and come back. That counts as leaving class / absence.
+- In this class, "ninja" and "doing the ninja" mean one thing only: sneaking out of class without Prof Nui noticing, to go to Coffee Bean for coffee or to pick up a Talabat order, and staying gone too long.
+- That is the whole meaning. Answer only that. Do not mention any other meaning of the word.
+- It counts as leaving class / absence. Stay in class. Your coffee can wait.
 
 HOW PARTICIPATION IS RECORDED EACH CLASS:
 Mazeeda records a mark every class, as an indicator of how much of the class you attended.
