@@ -37,13 +37,25 @@ export default function Home() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-8 sm:px-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          AskProfNui
-        </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Your teaching assistant for digital transformation at CMU-Q.
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+            AskProfNui
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Your teaching assistant for digital transformation at CMU-Q.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={async () => {
+            await fetch("/api/logout", { method: "POST" });
+            window.location.href = "/login";
+          }}
+          className="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          Log out
+        </button>
       </header>
 
       <div className="mb-5 inline-flex gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-slate-900">

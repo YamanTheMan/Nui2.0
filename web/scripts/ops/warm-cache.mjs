@@ -7,6 +7,8 @@
  *   node scripts/warm-cache.mjs https://askprofnui.vercel.app
  */
 
+import { authCookie } from "../lib/chat-client.mjs";
+
 const BASE = process.argv[2] ?? "http://localhost:3000";
 
 const QUESTIONS = [
@@ -43,9 +45,10 @@ const QUESTIONS = [
 
 async function warm(question) {
   const started = Date.now();
+  const cookie = await authCookie(BASE);
   const response = await fetch(`${BASE}/api/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({
       messages: [{ id: "1", role: "user", parts: [{ type: "text", text: question }] }],
       profile: { name: "", major: "", year: "" },

@@ -9,7 +9,7 @@
  * Usage: node scripts/test/email.mjs [baseUrl]
  */
 
-import { askChat, createReporter, plain } from "../lib/chat-client.mjs";
+import { askChat, authCookie, createReporter, plain } from "../lib/chat-client.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 const PROFILE = { name: "Yaman Ali", major: "Information Systems", year: "Junior" };
@@ -19,9 +19,10 @@ const report = createReporter();
 const ask = (question) => askChat({ base: BASE, question, profile: PROFILE });
 
 async function draft(offer) {
+  const cookie = await authCookie(BASE);
   const res = await fetch(`${BASE}/api/email-draft`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({ situation: offer.situation, reason: offer.reason, profile: PROFILE }),
   });
   return res.json();

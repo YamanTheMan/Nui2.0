@@ -4,6 +4,8 @@
  * and must never carry one student's name into another student's chat.
  */
 
+import { authCookie } from "../lib/chat-client.mjs";
+
 const BASE = process.argv[2] ?? "http://localhost:3000";
 
 const YAMAN = { name: "Yaman", major: "Information Systems", year: "Junior" };
@@ -16,9 +18,10 @@ async function ask(question, profile, history = []) {
     { id: String(history.length + 1), role: "user", parts: [{ type: "text", text: question }] },
   ];
 
+  const cookie = await authCookie(BASE);
   const response = await fetch(`${BASE}/api/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({ messages, profile }),
   });
 

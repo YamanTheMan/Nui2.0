@@ -6,6 +6,8 @@
  * Pass --repeat to ask each question twice, showing the cached second pass.
  */
 
+import { authCookie } from "../lib/chat-client.mjs";
+
 const args = process.argv.slice(2);
 const REPEAT = args.includes("--repeat");
 const BASE = args.find((a) => !a.startsWith("--")) ?? "http://localhost:3000";
@@ -21,9 +23,10 @@ const QUERIES = [
 
 async function measure(question) {
   const started = Date.now();
+  const cookie = await authCookie(BASE);
   const response = await fetch(`${BASE}/api/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({
       messages: [{ id: "1", role: "user", parts: [{ type: "text", text: question }] }],
       profile: PROFILE,

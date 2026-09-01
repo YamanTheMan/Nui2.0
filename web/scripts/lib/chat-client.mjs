@@ -52,6 +52,33 @@ export function roboticTell(text) {
  * Sends one turn to the chat API and drains the stream.
  * `history` is the prior UI messages, so multi-turn flows can be walked.
  */
+const cookieByBase = new Map();
+
+/** Signs in with the demo credentials and caches the session cookie per host. */
+export async function authCookie(base) {
+  if (cookieByBase.has(base)) return cookieByBase.get(base);
+
+  const res = await fetch(`${base}/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: process.env.LOGIN_USERNAME ?? "askprofnui",
+      password: process.env.LOGIN_PASSWORD ?? "",
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(`login failed: ${res.status} ${await res.text()}`);
+  }
+
+  const cookies =
+    typeof res.headers.getSetCookie === "function"
+      ? res.headers.getSetCookie()
+      : [res.headers.get("set-cookie")];
+  const cookie = cookies.filter(Boolean).map((c) => c.split(";")[0]).join("; ");
+  cookieByBase.set(base, cookie);
+  return cookie;
+}
+
 export async function askChat({ base, question, profile, history = [] }) {
   const messages = [
     ...history,
@@ -59,9 +86,10 @@ export async function askChat({ base, question, profile, history = [] }) {
   ];
 
   const started = Date.now();
+  const cookie = await authCookie(base);
   const response = await fetch(`${base}/api/chat`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({ messages, profile }),
   });
 

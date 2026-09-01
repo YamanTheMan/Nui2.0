@@ -75,6 +75,10 @@ ELEVENLABS_VOICE_ID=...
 
 Text chat only needs `GROQ_API_KEY`; the rest power the live avatar.
 
+The site asks people to sign in first with the course username and password.
+Set `LOGIN_USERNAME` and `LOGIN_PASSWORD` to override them; the test scripts
+read the same two variables from `.env.local`.
+
 ## Adding or editing course content
 
 1. Edit or add a `.txt` file in `documents/` (repo root).
