@@ -17,11 +17,10 @@ import { createHash } from "node:crypto";
 import courseIndex from "../retrieval/course-index.json";
 
 /** Bump when prompt wording changes in a way that should invalidate answers. */
-const PROMPT_VERSION = "v3";
+const PROMPT_VERSION = "v8-nui-2";
 
 const CONTENT_VERSION = createHash("sha256")
-  .update(String(courseIndex.generatedAt))
-  .update(String(courseIndex.chunks.length))
+  .update(JSON.stringify(courseIndex.chunks))
   .digest("hex")
   .slice(0, 12);
 
@@ -36,15 +35,53 @@ export const DEGRADED_TTL_SECONDS = 60 * 30;
 
 const CACHE_TAG = "course-answers";
 
-/** Local fallback so `npm run dev` behaves like production. */
-const memoryCache = new Map<string, string>();
+const CACHE_OPERATION_MS = 400;
+
+/** A bounded fallback with the same expiry rules as the production cache. */
+export class ExpiringAnswerCache {
+  private readonly entries = new Map<string, { answer: string; expiresAt: number }>();
+
+  constructor(private readonly capacity = 256, private readonly now = Date.now) {}
+
+  get(key: string): string | null {
+    const entry = this.entries.get(key);
+    if (!entry) return null;
+    this.entries.delete(key);
+    if (entry.expiresAt <= this.now()) return null;
+    this.entries.set(key, entry);
+    return entry.answer;
+  }
+
+  set(key: string, answer: string, ttlSeconds: number): void {
+    if (!answer.trim() || !Number.isFinite(ttlSeconds) || ttlSeconds <= 0) return;
+    this.entries.delete(key);
+    this.entries.set(key, { answer: answer.trim(), expiresAt: this.now() + ttlSeconds * 1000 });
+    while (this.entries.size > this.capacity) {
+      const oldest = this.entries.keys().next().value;
+      if (oldest !== undefined) this.entries.delete(oldest);
+    }
+  }
+}
+
+const memoryCache = new ExpiringAnswerCache();
 
 function normaliseQuestion(question: string): string {
   return question
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
+    .normalize("NFC")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+async function bestEffort<T>(pending: Promise<T>): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      pending.catch(() => null),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), CACHE_OPERATION_MS); }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function answerCacheKey(question: string, intent: string): string {
@@ -70,16 +107,18 @@ async function runtimeCache(): Promise<VercelCache | null> {
 }
 
 export async function getCachedAnswer(key: string): Promise<string | null> {
-  const cache = await runtimeCache();
+  const memory = memoryCache.get(key);
+  if (memory) return memory;
+  const cache = await bestEffort(runtimeCache());
   if (cache) {
     try {
-      const value = await cache.get(key);
+      const value = await bestEffort(cache.get(key));
       if (typeof value === "string" && value.length > 0) return value;
     } catch {
       // fall through to the in-memory copy
     }
   }
-  return memoryCache.get(key) ?? null;
+  return null;
 }
 
 export async function setCachedAnswer(
@@ -90,12 +129,12 @@ export async function setCachedAnswer(
   const trimmed = answer.trim();
   if (!trimmed) return;
 
-  memoryCache.set(key, trimmed);
+  memoryCache.set(key, trimmed, ttlSeconds);
 
-  const cache = await runtimeCache();
+  const cache = await bestEffort(runtimeCache());
   if (!cache) return;
   try {
-    await cache.set(key, trimmed, { ttl: ttlSeconds, tags: [CACHE_TAG] });
+    await bestEffort(cache.set(key, trimmed, { ttl: ttlSeconds, tags: [CACHE_TAG] }));
   } catch {
     // caching is an optimisation; never fail the request over it
   }

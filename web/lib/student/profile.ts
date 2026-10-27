@@ -20,25 +20,25 @@ export function sessionOpening({ name, major, year }: StudentProfile): string {
 
   if (first && trimmedYear && trimmedMajor) {
     return (
-      `Hi ${first}, how are you? I'm AskProfNui. ` +
+      `Hi ${first}, how are you? I'm Nui 2.0. ` +
       `I see you're a ${trimmedYear} studying ${trimmedMajor} — nice to meet you. ` +
       `What can I help you with today for digital transformation?`
     );
   }
   if (first && trimmedMajor) {
     return (
-      `Hi ${first}, how are you? I'm AskProfNui. ` +
+      `Hi ${first}, how are you? I'm Nui 2.0. ` +
       `You're in ${trimmedMajor}, right? What can I help you with today?`
     );
   }
   if (first) {
     return (
-      `Hi ${first}, how are you? I'm AskProfNui. ` +
+      `Hi ${first}, how are you? I'm Nui 2.0. ` +
       `What can I help you with today — anything on digital transformation?`
     );
   }
   return (
-    "Hi, how are you? I'm AskProfNui. " +
+    "Hi, how are you? I'm Nui 2.0. " +
     "What can I help you with today for digital transformation?"
   );
 }

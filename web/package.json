@@ -1,6 +1,6 @@
 {
   "name": "web",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,13 +10,18 @@
     "sync": "node scripts/content/sync.mjs",
     "index": "node scripts/content/build-index.mjs",
     "test": "node scripts/test/all.mjs",
-    "test:routing": "tsx scripts/test/retrieval.mts",
+    "test:routing": "node --import tsx scripts/test/retrieval.mts",
     "test:smoke": "node scripts/test/smoke.mjs",
     "test:scenarios": "node scripts/test/scenarios.mjs",
     "test:email": "node scripts/test/email.mjs",
     "test:cache": "node scripts/test/cache.mjs",
     "test:tone": "node scripts/test/tone-probe.mjs",
-    "warm": "node scripts/ops/warm-cache.mjs"
+    "warm": "node scripts/ops/warm-cache.mjs",
+    "test:browser": "playwright test",
+    "test:runtime": "node --import tsx scripts/test/runtime.mts",
+    "test:profile": "node --import tsx scripts/test/profile.mts",
+    "test:offline": "node --import tsx scripts/test/retrieval.mts && node --import tsx scripts/test/runtime.mts && node --import tsx scripts/test/profile.mts && node --import tsx scripts/test/live-language.mts",
+    "format": "prettier --write app components lib scripts/test/browser playwright.config.ts"
   },
   "dependencies": {
     "@ai-sdk/groq": "^4.0.28",
@@ -24,18 +29,21 @@
     "@heygen/liveavatar-web-sdk": "^0.0.18",
     "@vercel/functions": "^3.9.3",
     "ai": "^7.0.66",
-    "next": "16.3.1",
+    "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.1",
+    "eslint-config-next": "16.3.5",
+    "prettier": "^3.9.8",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

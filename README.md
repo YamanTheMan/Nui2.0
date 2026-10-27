@@ -1,4 +1,4 @@
-# AskProfNui
+# Nui 2.0
 
 AI teaching assistant for **IS 67-382: Digital Transformation, Strategy and
 Management** at CMU-Q. Students ask questions by voice or text and get answers

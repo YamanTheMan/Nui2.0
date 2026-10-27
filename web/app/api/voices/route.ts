@@ -8,8 +8,11 @@ export async function GET() {
       voices,
       defaultVoiceId: pickDefaultVoice(voices, config.voiceId),
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return Response.json({ voices: [], defaultVoiceId: "", error: message }, { status: 502 });
+  } catch {
+    return Response.json({
+      voices: [],
+      defaultVoiceId: "",
+      error: "Voice choices are temporarily unavailable. The default voice is still available when configured.",
+    }, { status: 502 });
   }
 }

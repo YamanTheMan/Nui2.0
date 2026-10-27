@@ -11,6 +11,8 @@ import rawIndex from "./course-index.json";
 export type Chunk = {
   text: string;
   source: string;
+  title: string;
+  section: string;
   chunkIndex: number;
 };
 
@@ -27,18 +29,21 @@ const STOPWORDS = new Set([
   "me", "my", "of", "on", "or", "our", "so", "than", "that", "the", "their",
   "them", "then", "there", "these", "they", "this", "to", "was", "we", "were",
   "what", "when", "where", "which", "who", "will", "with", "you", "your",
+  "explain", "describe", "define", "tell", "please", "help", "understand",
+  "about", "could", "would", "should", "some", "give", "know", "want",
+  "between", "versus", "vs", "compare", "difference", "differences",
 ]);
 
 function normaliseToken(token: string): string {
   // Light suffix stripping so "assignments" matches "assignment".
   if (token.length > 4 && token.endsWith("ies")) return `${token.slice(0, -3)}y`;
-  if (token.length > 3 && token.endsWith("es")) return token.slice(0, -2);
-  if (token.length > 3 && token.endsWith("s")) return token.slice(0, -1);
+  if (token.length > 4 && /(sses|shes|ches|xes|zes)$/.test(token)) return token.slice(0, -2);
+  if (token.length > 3 && token.endsWith("s") && !/(ss|us|is)$/.test(token)) return token.slice(0, -1);
   return token;
 }
 
 export function tokenize(text: string): string[] {
-  const matches = text.toLowerCase().match(/[a-z0-9%]+/g) ?? [];
+  const matches = text.toLowerCase().replace(/([a-z])['’]s\b/g, "$1").match(/[a-z0-9%]+/g) ?? [];
   const tokens: string[] = [];
   for (const raw of matches) {
     if (STOPWORDS.has(raw)) continue;
@@ -53,6 +58,7 @@ type Bm25Index = {
   avgLength: number;
   docFreq: Map<string, number>;
   total: number;
+  headings: Array<Set<string>>;
 };
 
 let index: Bm25Index | null = null;
@@ -61,6 +67,7 @@ function buildIndex(): Bm25Index {
   const termFreqs: Array<Map<string, number>> = [];
   const lengths: number[] = [];
   const docFreq = new Map<string, number>();
+  const headings: Array<Set<string>> = [];
 
   for (const chunk of CHUNKS) {
     const tokens = tokenize(chunk.text);
@@ -73,12 +80,13 @@ function buildIndex(): Bm25Index {
     }
     termFreqs.push(freqs);
     lengths.push(tokens.length);
+    headings.push(new Set(tokenize(chunk.section)));
   }
 
   const total = CHUNKS.length;
   const avgLength = total > 0 ? lengths.reduce((a, b) => a + b, 0) / total : 0;
 
-  return { termFreqs, lengths, avgLength, docFreq, total };
+  return { termFreqs, lengths, avgLength, docFreq, total, headings };
 }
 
 function getIndex(): Bm25Index {
@@ -93,8 +101,9 @@ function idf(term: string, idx: Bm25Index): number {
 }
 
 /**
- * Rank chunks against a query. Scores are normalised to 0–1 relative to the
- * best hit so callers can reason about retrieval confidence.
+ * Rank with BM25 and heading matches. `score` is lexical evidence coverage,
+ * NOT a probability that an answer is correct. It is independent of the best
+ * hit: weak and out-of-corpus queries must not automatically score 1.
  */
 export function search(query: string, topK = 12): ScoredChunk[] {
   const idx = getIndex();
@@ -103,6 +112,11 @@ export function search(query: string, topK = 12): ScoredChunk[] {
 
   const uniqueTerms = [...new Set(queryTokens)];
   const scores = new Array<number>(idx.total).fill(0);
+  const coverage = new Array<number>(idx.total).fill(0);
+  // Missing terms must count against confidence, even though BM25 cannot score
+  // them. Otherwise "quantum assignment" is as confident as "assignment".
+  const unknownWeight = Math.log(1 + idx.total);
+  const totalWeight = uniqueTerms.reduce((sum, term) => sum + (idf(term, idx) || unknownWeight), 0);
 
   for (const term of uniqueTerms) {
     const termIdf = idf(term, idx);
@@ -112,23 +126,21 @@ export function search(query: string, topK = 12): ScoredChunk[] {
       if (!tf) continue;
       const norm = 1 - B + (B * idx.lengths[docId]) / (idx.avgLength || 1);
       scores[docId] += (termIdf * (tf * (K1 + 1))) / (tf + K1 * norm);
+      coverage[docId] += termIdf;
+      if (idx.headings[docId].has(term)) scores[docId] += termIdf * 0.85;
     }
   }
 
-  const ranked: ScoredChunk[] = [];
+  const ranked: Array<{ chunk: ScoredChunk; relevance: number }> = [];
   for (let docId = 0; docId < idx.total; docId += 1) {
     if (scores[docId] > 0) {
-      ranked.push({ ...CHUNKS[docId], score: scores[docId] });
+      const confidence = coverage[docId] / totalWeight;
+      ranked.push({ chunk: { ...CHUNKS[docId], score: confidence }, relevance: scores[docId] });
     }
   }
 
-  ranked.sort((a, b) => b.score - a.score);
-  const top = ranked.slice(0, topK);
-  const best = top[0]?.score ?? 0;
-  if (best > 0) {
-    for (const chunk of top) chunk.score = chunk.score / best;
-  }
-  return top;
+  ranked.sort((a, b) => b.relevance - a.relevance);
+  return ranked.slice(0, Math.max(0, topK)).map(({ chunk }) => chunk);
 }
 
 export function chunkCount(): number {

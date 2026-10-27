@@ -7,43 +7,50 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DOCUMENTS_DIR = resolve(HERE, "../../../documents");
 const OUTPUT_FILE = resolve(HERE, "../../lib/retrieval/course-index.json");
 
-const CHUNK_SIZE = 800;
-const OVERLAP = 100;
+// Keep a complete framework, assignment rubric, or policy together whenever
+// possible. Splitting every 800 characters cut words, lists, and their headings.
+const SECTION_LIMIT = 3800;
+const PERSONA_FACTS = /WOW FACTOR|ATTENDANCE|THE DANCE|WORD COUNT/;
 
-function splitLongSection(text, source, baseIndex) {
+export function chunkText(text, source) {
   const chunks = [];
-  let start = 0;
-  let subIndex = 0;
-  while (start < text.length) {
-    const chunk = text.slice(start, start + CHUNK_SIZE).trim();
-    if (chunk) {
-      chunks.push({ text: chunk, source, chunkIndex: baseIndex + subIndex });
-      subIndex += 1;
-    }
-    start += CHUNK_SIZE - OVERLAP;
-  }
-  return chunks;
-}
+  const normalized = text.replace(/\r\n?/g, "\n").trim();
+  const title = normalized.split("\n")[0].trim();
+  for (const rawSection of normalized.split(/\n\s*---\s*\n/)) {
+    const content = rawSection.trim();
+    if (!content) continue;
+    const section = content.split("\n")[0].trim();
+    // These are authoring templates, not actual scholarly evidence. Behavioral
+    // instructions from the persona are supplied by the system prompt instead.
+    if (/^ADD .*SUMMARIES HERE$/i.test(section)) continue;
+    if (source === "D09_prof_nui_persona.txt" && !PERSONA_FACTS.test(section)) continue;
 
-function chunkText(text, source) {
-  const chunks = [];
-  let index = 0;
-  for (const rawSection of text.split(/\n---\n/)) {
-    const section = rawSection.trim();
-    if (!section) continue;
-    if (section.length <= CHUNK_SIZE) {
-      chunks.push({ text: section, source, chunkIndex: index });
-      index += 1;
-    } else {
-      const sub = splitLongSection(section, source, index);
-      chunks.push(...sub);
-      index += sub.length;
+    const add = (body) => chunks.push({
+      text: body.trim(), source, title, section, chunkIndex: chunks.length,
+    });
+    if (content.length <= SECTION_LIMIT) {
+      add(content);
+      continue;
     }
+
+    // Split only between whole paragraphs. Every continuation carries its
+    // section heading so a retrieved factor never loses its framework identity.
+    const paragraphs = content.slice(section.length).trim().split(/\n\s*\n/);
+    let body = section;
+    for (const paragraph of paragraphs) {
+      if (body.length > section.length && body.length + paragraph.length > SECTION_LIMIT) {
+        add(body);
+        body = section;
+      }
+      body += `\n\n${paragraph}`;
+    }
+    if (body.length > section.length) add(body);
   }
   return chunks;
 }
@@ -66,7 +73,8 @@ export function buildIndex() {
   }
 
   const payload = {
-    generatedAt: new Date().toISOString(),
+    version: 2,
+    contentHash: createHash("sha256").update(JSON.stringify(chunks)).digest("hex"),
     documentCount: files.length,
     chunks,
   };

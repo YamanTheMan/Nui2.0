@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Puts AskProfNui through the situations students actually create, and prints
+ * Puts Nui 2.0 through the situations students actually create, and prints
  * every reply so the tone can be judged by reading it, not just asserted.
  *
  * Usage: node scripts/test-scenarios.mjs [baseUrl]
@@ -105,7 +105,7 @@ const SCENARIOS = [
   },
 ];
 
-console.log(`\nAskProfNui scenario pass — ${BASE}\n${"=".repeat(70)}`);
+console.log(`\nNui 2.0 scenario pass — ${BASE}\n${"=".repeat(70)}`);
 
 for (const scenario of SCENARIOS) {
   const { text } = await ask(scenario.ask);

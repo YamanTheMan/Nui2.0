@@ -8,3 +8,6 @@ venv/
 chroma_db/
 .fastembed_cache/
 voice-samples/
+
+# Launch videos, audio and zips (~500 MB); kept out of git
+outputs/

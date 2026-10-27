@@ -6,6 +6,18 @@
  * match. Every reply is normalised here before anything is checked against it.
  */
 
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Use the same local login configuration as Next.js. Existing environment
+// variables win, so CI can still supply credentials for a different target.
+const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+for (const name of [".env.local", ".env"]) {
+  const path = resolve(webRoot, name);
+  if (existsSync(path)) process.loadEnvFile(path);
+}
+
 const PUNCTUATION = [
   [/[\u2018\u2019\u201A\u201B\u2032]/g, "'"],
   [/[\u201C\u201D\u201E\u201F\u2033]/g, '"'],
@@ -53,12 +65,24 @@ export function roboticTell(text) {
  * `history` is the prior UI messages, so multi-turn flows can be walked.
  */
 const cookieByBase = new Map();
+let nextChatAt = 0;
+
+/** Optional pacing for small provider quotas; cache checks share this path. */
+async function paceChat() {
+  const interval = Number(process.env.CHAT_TEST_INTERVAL_MS ?? 0);
+  if (!Number.isFinite(interval) || interval <= 0) return;
+  const scheduled = Math.max(Date.now(), nextChatAt);
+  nextChatAt = scheduled + interval;
+  const delay = scheduled - Date.now();
+  if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+}
 
 /** Signs in with the demo credentials and caches the session cookie per host. */
 export async function authCookie(base) {
   if (cookieByBase.has(base)) return cookieByBase.get(base);
 
   const res = await fetch(`${base}/api/login`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -85,9 +109,11 @@ export async function askChat({ base, question, profile, history = [] }) {
     { id: `u${history.length}`, role: "user", parts: [{ type: "text", text: question }] },
   ];
 
-  const started = Date.now();
   const cookie = await authCookie(base);
+  await paceChat();
+  const started = Date.now();
   const response = await fetch(`${base}/api/chat`, {
+    signal: AbortSignal.timeout(40_000),
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: cookie },
     body: JSON.stringify({ messages, profile }),
@@ -97,7 +123,6 @@ export async function askChat({ base, question, profile, history = [] }) {
     throw new Error(`HTTP ${response.status}: ${await response.text()}`);
   }
 
-  const sessionEnd = response.headers.get("x-session-end") === "true";
   const cache = response.headers.get("x-answer-cache");
 
   const raw = await response.text();
@@ -105,6 +130,8 @@ export async function askChat({ base, question, profile, history = [] }) {
   let sessionEndPart = false;
   let emailOffer = null;
   let errored = null;
+  let sources = [];
+  let answerStatus = null;
 
   for (const line of raw.split("\n")) {
     if (!line.startsWith("data:")) continue;
@@ -115,6 +142,8 @@ export async function askChat({ base, question, profile, history = [] }) {
       if (event.type === "text-delta") text += event.delta ?? "";
       if (event.type === "data-session-end") sessionEndPart = true;
       if (event.type === "data-email-offer") emailOffer = event.data ?? null;
+      if (event.type === "data-sources") sources = event.data ?? [];
+      if (event.type === "data-answer-status") answerStatus = event.data ?? null;
       if (event.type === "error") errored = event.errorText ?? "stream error";
     } catch {
       // ignore keep-alive noise
@@ -122,12 +151,14 @@ export async function askChat({ base, question, profile, history = [] }) {
   }
 
   if (errored) throw new Error(errored);
+  if (answerStatus) throw new Error(`Answer ${answerStatus.status}: ${text.trim()}`);
 
   return {
     text: plain(text.trim()),
-    sessionEnd,
+    sessionEnd: sessionEndPart,
     sessionEndPart,
     emailOffer,
+    sources,
     cache,
     elapsed: Date.now() - started,
     messages,

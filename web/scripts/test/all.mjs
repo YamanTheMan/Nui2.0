@@ -19,13 +19,15 @@ const BASE = process.argv[2] ?? "http://localhost:3000";
 
 const SUITES = [
   ["routing + retrieval", "retrieval.mts", true],
+  ["runtime safety", "runtime.mts", true],
+  ["profile persistence", "profile.mts", true],
   ["answer facts", "smoke.mjs", false],
   ["tone + escalation", "scenarios.mjs", false],
   ["email hand-off", "email.mjs", false],
   ["cache behaviour", "cache.mjs", false],
 ];
 
-console.log(`\nAskProfNui test run — ${BASE}`);
+console.log(`\nNui 2.0 test run — ${BASE}`);
 
 const failed = [];
 
@@ -36,7 +38,7 @@ for (const [label, file, needsTsx] of SUITES) {
   // The retrieval suite imports the library directly, so it needs no server
   // and takes no target.
   const [command, args] = needsTsx
-    ? ["npx", ["tsx", script]]
+    ? ["node", ["--import", "tsx", script]]
     : ["node", [script, BASE]];
 
   const result = spawnSync(command, args, { stdio: "inherit" });

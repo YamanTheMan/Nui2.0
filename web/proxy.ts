@@ -5,7 +5,7 @@ import { isValidSession, SESSION_COOKIE } from "@/lib/auth/session";
 function isPublic(pathname: string): boolean {
   if (pathname === "/login" || pathname === "/api/login") return true;
   if (pathname.startsWith("/_next/")) return true;
-  if (pathname === "/favicon.ico") return true;
+  if (pathname === "/favicon.ico" || pathname === "/icon.svg") return true;
   return false;
 }
 
@@ -26,6 +26,6 @@ export function proxy(request: NextRequest) {
   return NextResponse.redirect(login);
 }
 
-export const proxyConfig = {
+export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

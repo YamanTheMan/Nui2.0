@@ -6,7 +6,7 @@
  */
 
 import { buildGenerationPlan, retrieveContext, classifyIntent } from "../../lib/chat/prompt.ts";
-import { getFactsForQuery } from "../../lib/chat/course-facts.ts";
+import { getFactChunksForQuery } from "../../lib/chat/course-facts.ts";
 
 const PROFILE = { name: "Yaman Hemmoudeh", major: "Information Systems", year: "Junior" };
 
@@ -22,23 +22,11 @@ const QUERIES = [
   "why did Renren fail",
 ];
 
-// Rough but consistent: ~4 characters per token for English prose.
+// Rough estimates only: the provider's tokenizer and usage fields are authoritative.
 const tokens = (text: string) => Math.round(text.length / 4);
 
-/** How much of the retrieved chunk text is already present in the facts block? */
-function overlapRatio(facts: string, rag: string): number {
-  if (!facts || !rag) return 0;
-  const factLines = new Set(
-    facts.split("\n").map((l) => l.trim()).filter((l) => l.length > 40),
-  );
-  const ragLines = rag.split("\n").map((l) => l.trim()).filter((l) => l.length > 40);
-  if (ragLines.length === 0) return 0;
-  const duplicated = ragLines.filter((l) => factLines.has(l)).length;
-  return duplicated / ragLines.length;
-}
-
 console.log(
-  "query                          intent            facts    rag   total  dup",
+  "query                          intent            facts  extra  system  sources",
 );
 console.log("-".repeat(78));
 
@@ -50,15 +38,15 @@ for (const query of QUERIES) {
 
   let factTokens = 0;
   let ragTokens = 0;
-  let dup = 0;
+  let sourceCount = 0;
 
   if (intent === "retrieve" || intent === "escalate") {
-    const facts = getFactsForQuery(query);
+    const facts = getFactChunksForQuery(query);
     const retrieval = retrieveContext(query);
-    const ragOnly = retrieval.context.split("=== RETRIEVED COURSE MATERIAL ===")[1] ?? "";
-    factTokens = tokens(facts);
-    ragTokens = tokens(ragOnly);
-    dup = overlapRatio(facts, ragOnly);
+    const factKeys = new Set(facts.map((chunk) => `${chunk.source}:${chunk.chunkIndex}`));
+    factTokens = tokens(retrieval.sources.filter((chunk) => factKeys.has(`${chunk.source}:${chunk.chunkIndex}`)).map((chunk) => chunk.text).join("\n"));
+    ragTokens = tokens(retrieval.sources.filter((chunk) => !factKeys.has(`${chunk.source}:${chunk.chunkIndex}`)).map((chunk) => chunk.text).join("\n"));
+    sourceCount = retrieval.sources.length;
   }
 
   const total = tokens(plan.system);
@@ -66,10 +54,10 @@ for (const query of QUERIES) {
 
   const label = query.length > 28 ? `${query.slice(0, 25)}...` : query.padEnd(28);
   console.log(
-    `${label}   ${intent.padEnd(16)} ${String(factTokens).padStart(5)}  ${String(ragTokens).padStart(5)}  ${String(total).padStart(6)}  ${(dup * 100).toFixed(0).padStart(3)}%`,
+    `${label}   ${intent.padEnd(16)} ${String(factTokens).padStart(5)}  ${String(ragTokens).padStart(5)}  ${String(total).padStart(6)}  ${String(sourceCount).padStart(3)}`,
   );
 }
 
 console.log("-".repeat(78));
 console.log(`average system prompt: ${Math.round(totalTokens / QUERIES.length)} tokens`);
-console.log("(whole corpus is ~32,000 tokens for comparison)");
+console.log("Facts and extra evidence are disjoint; system also includes persona, grounding rules and source labels.");

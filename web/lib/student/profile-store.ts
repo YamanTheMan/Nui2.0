@@ -12,16 +12,36 @@ const STORAGE_KEY = "askprofnui.profile";
 
 let cachedRaw: string | null = null;
 let cachedProfile: StudentProfile = EMPTY_PROFILE;
+let memoryOnly = false;
 
 const listeners = new Set<() => void>();
 
 function parse(raw: string | null): StudentProfile {
   if (!raw) return EMPTY_PROFILE;
   try {
-    return { ...EMPTY_PROFILE, ...(JSON.parse(raw) as Partial<StudentProfile>) };
+    return normalise(JSON.parse(raw));
   } catch {
     return EMPTY_PROFILE;
   }
+}
+
+function normalise(input: unknown): StudentProfile {
+  if (!input || typeof input !== "object" || Array.isArray(input))
+    return EMPTY_PROFILE;
+  const raw = input as Record<string, unknown>;
+  const field = (value: unknown) =>
+    typeof value === "string"
+      ? value
+          .replace(/[\u0000-\u001f\u007f]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 120)
+      : "";
+  return {
+    name: field(raw.name),
+    major: field(raw.major),
+    year: field(raw.year),
+  };
 }
 
 export function subscribe(onChange: () => void): () => void {
@@ -34,11 +54,13 @@ export function subscribe(onChange: () => void): () => void {
 }
 
 export function getSnapshot(): StudentProfile {
+  // A failed write must not let an older stored value replace the user's edit.
+  if (memoryOnly) return cachedProfile;
   let raw: string | null = null;
   try {
     raw = window.localStorage.getItem(STORAGE_KEY);
   } catch {
-    raw = null;
+    return cachedProfile;
   }
   if (raw !== cachedRaw) {
     cachedRaw = raw;
@@ -52,12 +74,14 @@ export function getServerSnapshot(): StudentProfile {
 }
 
 export function saveProfile(profile: StudentProfile): void {
-  cachedProfile = profile;
-  cachedRaw = JSON.stringify(profile);
+  cachedProfile = normalise(profile);
+  cachedRaw = JSON.stringify(cachedProfile);
   try {
     window.localStorage.setItem(STORAGE_KEY, cachedRaw);
+    memoryOnly = false;
   } catch {
     // storage may be unavailable; the value still applies for this session
+    memoryOnly = true;
   }
   for (const listener of listeners) listener();
 }

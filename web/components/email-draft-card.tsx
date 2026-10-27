@@ -1,24 +1,20 @@
 "use client";
-
-import { useState } from "react";
-
-import { gmailComposeUrl, mailtoUrl, PROF_EMAIL, type EmailReason } from "@/lib/chat/email";
+import { useEffect, useRef, useState } from "react";
+import {
+  gmailComposeUrl,
+  mailtoUrl,
+  PROF_EMAIL,
+  type EmailReason,
+} from "@/lib/chat/email";
 import type { StudentProfile } from "@/lib/student/profile";
+import Icon from "./ui-icon";
 
 export type EmailOffer = {
   reason: EmailReason;
   summary: string;
   situation: string;
 };
-
 type Draft = { to: string; subject: string; body: string };
-type Status = "idle" | "writing" | "ready" | "error";
-
-/**
- * Sits under a reply about something only Prof Nui can settle. It writes the
- * email, lets the student edit it, and hands them a filled-in Gmail draft —
- * they still read it and press send themselves.
- */
 export default function EmailDraftCard({
   offer,
   profile,
@@ -26,115 +22,135 @@ export default function EmailDraftCard({
   offer: EmailOffer;
   profile: StudentProfile;
 }) {
-  const [status, setStatus] = useState<Status>("idle");
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [copied, setCopied] = useState(false);
-
+  const [writing, setWriting] = useState(false);
+  const [error, setError] = useState("");
+  const [copyStatus, setCopyStatus] = useState("");
+  const controller = useRef<AbortController | null>(null);
+  useEffect(() => () => controller.current?.abort(), []);
   const write = async () => {
-    setStatus("writing");
+    if (writing) return;
+    const request = new AbortController();
+    controller.current = request;
+    setWriting(true);
+    setError("");
+    setCopyStatus("");
     try {
-      const res = await fetch("/api/email-draft", {
+      const response = await fetch("/api/email-draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ situation: offer.situation, reason: offer.reason, profile }),
+        body: JSON.stringify({
+          situation: offer.situation,
+          reason: offer.reason,
+          profile,
+        }),
+        signal: request.signal,
       });
-      if (!res.ok) throw new Error("draft failed");
-      const data = (await res.json()) as Draft;
-      setDraft(data);
-      setStatus("ready");
+      if (!response.ok) throw new Error();
+      const data = (await response.json()) as Draft;
+      if (!request.signal.aborted) setDraft(data);
     } catch {
-      setStatus("error");
+      if (!request.signal.aborted)
+        setError("The draft couldn't be created. Please try again.");
+    } finally {
+      if (!request.signal.aborted) setWriting(false);
     }
   };
-
   const copy = async () => {
     if (!draft) return;
-    await navigator.clipboard.writeText(`Subject: ${draft.subject}\n\n${draft.body}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(
+        `Subject: ${draft.subject}\n\n${draft.body}`,
+      );
+      setCopyStatus("Copied");
+    } catch {
+      setCopyStatus("Select the draft text to copy it.");
+    }
   };
-
-  if (status === "idle" || status === "writing" || status === "error") {
+  if (!draft)
     return (
-      <div className="mt-2 flex flex-wrap items-center gap-3">
+      <div className="email-offer">
         <button
-          type="button"
-          onClick={write}
-          disabled={status === "writing"}
-          className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="button secondary"
+          onClick={() => void write()}
+          disabled={writing}
         >
-          {status === "writing" ? "Writing the email…" : "Write this email for me"}
+          <Icon name="spark" size={14} />
+          {writing ? "Writing your draft…" : "Help me write the email"}
         </button>
-        {status === "error" ? (
-          <span className="text-xs text-red-600 dark:text-red-400">
-            That didn&apos;t work. Try again?
-          </span>
-        ) : null}
+        {error && (
+          <p className="error-note" role="alert">
+            {error}
+          </p>
+        )}
       </div>
     );
-  }
-
-  if (!draft) return null;
-
   return (
-    <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-950">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        Draft email to {draft.to || PROF_EMAIL}
+    <section className="email-draft">
+      <span className="eyebrow">YOUR EMAIL DRAFT</span>
+      <h3>A starting point for your message.</h3>
+      <p className="small muted">
+        To {PROF_EMAIL} · Review the draft and fill in any [brackets].
       </p>
-
-      <label className="block text-xs text-slate-500 dark:text-slate-400">
+      <label>
         Subject
         <input
           value={draft.subject}
-          onChange={(e) => setDraft({ ...draft, subject: e.target.value })}
-          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300"
+          onChange={(e) => {
+            setDraft({ ...draft, subject: e.target.value });
+            setCopyStatus("");
+          }}
         />
       </label>
-
-      <label className="mt-2 block text-xs text-slate-500 dark:text-slate-400">
+      <label>
         Message
         <textarea
-          value={draft.body}
-          onChange={(e) => setDraft({ ...draft, body: e.target.value })}
           rows={9}
-          className="mt-1 w-full resize-y rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm leading-relaxed text-slate-900 outline-none transition focus:border-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300"
+          value={draft.body}
+          onChange={(e) => {
+            setDraft({ ...draft, body: e.target.value });
+            setCopyStatus("");
+          }}
         />
       </label>
-
-      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-        Read it through and fill in anything in [brackets] before you send.
-      </p>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="email-actions">
         <a
+          className="button primary"
           href={gmailComposeUrl(draft)}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-300"
         >
           Open in Gmail
+          <Icon name="external" size={13} />
         </a>
-        <a
-          href={mailtoUrl(draft)}
-          className="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          Open in mail app
+        <a className="button secondary" href={mailtoUrl(draft)}>
+          Mail app
         </a>
-        <button
-          type="button"
-          onClick={copy}
-          className="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-        >
-          {copied ? "Copied" : "Copy"}
+        <button className="button secondary" onClick={() => void copy()}>
+          <Icon name="copy" size={13} />
+          Copy
         </button>
         <button
-          type="button"
-          onClick={write}
-          className="text-xs text-slate-500 underline-offset-2 transition hover:underline dark:text-slate-400"
+          className="text-button"
+          disabled={writing}
+          onClick={() => void write()}
         >
-          Rewrite
+          {writing ? "Rewriting…" : "Rewrite"}
         </button>
       </div>
-    </div>
+      {copyStatus && (
+        <p className="small muted" role="status">
+          {copyStatus}
+        </p>
+      )}
+      {error && (
+        <p className="error-note" role="alert">
+          {error}
+        </p>
+      )}
+      <p className="small muted">
+        You review and send it. Nothing is sent automatically.
+      </p>
+    </section>
   );
 }

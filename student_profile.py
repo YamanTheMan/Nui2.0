@@ -9,29 +9,29 @@ def first_name(full_name: str) -> str:
 
 
 def session_opening(name: str, major: str, year: str) -> str:
-    """Warm live-session opener — AskProfNui voice intro."""
+    """Warm live-session opener — Nui 2.0 voice intro."""
     first = first_name(name)
     major = major.strip()
     year = year.strip()
 
     if first and year and major:
         return (
-            f"Hi {first}, how are you? I'm AskProfNui. "
+            f"Hi {first}, how are you? I'm Nui 2.0. "
             f"I see you're a {year} studying {major} — nice to meet you. "
             f"What can I help you with today for digital transformation?"
         )
     if first and major:
         return (
-            f"Hi {first}, how are you? I'm AskProfNui. "
+            f"Hi {first}, how are you? I'm Nui 2.0. "
             f"You're in {major}, right? What can I help you with today?"
         )
     if first:
         return (
-            f"Hi {first}, how are you? I'm AskProfNui. "
+            f"Hi {first}, how are you? I'm Nui 2.0. "
             f"What can I help you with today — anything on digital transformation?"
         )
     return (
-        "Hi, how are you? I'm AskProfNui. "
+        "Hi, how are you? I'm Nui 2.0. "
         "What can I help you with today for digital transformation?"
     )
 

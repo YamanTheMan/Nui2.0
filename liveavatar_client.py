@@ -150,7 +150,7 @@ def render_liveavatar_widget(
     widget_id_json = json.dumps(widget_id)
     opening_json = json.dumps(
         opening_message
-        or "Hi, how are you? I'm AskProfNui. What can I help you with today for digital transformation?"
+        or "Hi, how are you? I'm Nui 2.0. What can I help you with today for digital transformation?"
     )
     student_name_json = json.dumps(student_first_name.strip() or "there")
     html = r"""<!DOCTYPE html>
@@ -351,12 +351,12 @@ def render_liveavatar_widget(
         <video id="avatar-video" autoplay playsinline></video>
         <div id="overlay">
           <div class="spinner"></div>
-          <div id="overlay-text">Preparing AskProfNui… please wait a moment.</div>
+          <div id="overlay-text">Preparing Nui 2.0… please wait a moment.</div>
         </div>
       </div>
       <aside class="sources" aria-live="polite">
         <h2>Sources &amp; quotes</h2>
-        <div class="sub">When AskProfNui cites research or course lines, they appear here.</div>
+        <div class="sub">When Nui 2.0 cites research or course lines, they appear here.</div>
         <div id="citations">
           <div class="cite-empty" id="cite-empty">No citations yet — ask about a concept, framework, or assignment.</div>
         </div>
@@ -493,7 +493,7 @@ def render_liveavatar_widget(
         console.warn("force stop failed (" + reason + ")", err);
       }
       setStatus("Session ended after her goodbye.");
-      setOverlay("Session ended. AskProfNui closed the office hours.", true);
+      setOverlay("Session ended. Nui 2.0 closed the office hours.", true);
       stopBtn.disabled = true;
       muteBtn.disabled = true;
       interruptBtn.disabled = true;
@@ -653,10 +653,10 @@ def render_liveavatar_widget(
             console.warn("Greeting nudge failed:", err);
           }
         }, 500);
-        setStatus("AskProfNui is introducing herself…");
+        setStatus("Nui 2.0 is introducing herself…");
       } catch (error) {
         console.warn("Greeting trigger failed:", error);
-        setStatus("Connected — say hi if AskProfNui is quiet.");
+        setStatus("Connected — say hi if Nui 2.0 is quiet.");
       }
     }
 
@@ -744,7 +744,7 @@ def render_liveavatar_widget(
     session.on(AgentEventsEnum.AVATAR_SPEAK_STARTED, () => {
       avatarSpeaking = true;
       updateInterruptButton();
-      setStatus("AskProfNui is speaking…");
+      setStatus("Nui 2.0 is speaking…");
     });
 
     session.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
@@ -794,7 +794,7 @@ def render_liveavatar_widget(
     });
 
     setTimeout(() => {
-      setOverlay("Loading AskProfNui…", true);
+      setOverlay("Loading Nui 2.0…", true);
       startSession();
     }, 700);
   </script>

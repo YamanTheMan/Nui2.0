@@ -4,7 +4,7 @@
  * and must never carry one student's name into another student's chat.
  */
 
-import { authCookie } from "../lib/chat-client.mjs";
+import { askChat } from "../lib/chat-client.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 
@@ -12,49 +12,10 @@ const YAMAN = { name: "Yaman", major: "Information Systems", year: "Junior" };
 const SARA = { name: "Sara Al-Thani", major: "Business Administration", year: "Senior" };
 
 async function ask(question, profile, history = []) {
-  const started = Date.now();
-  const messages = [
-    ...history,
-    { id: String(history.length + 1), role: "user", parts: [{ type: "text", text: question }] },
-  ];
-
-  const cookie = await authCookie(BASE);
-  const response = await fetch(`${BASE}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Cookie: cookie },
-    body: JSON.stringify({ messages, profile }),
-  });
-
-  if (!response.ok) throw new Error(`${response.status} ${await response.text()}`);
-
-  const cache = response.headers.get("x-answer-cache");
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let text = "";
-  let firstToken = null;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-      const payload = line.slice(6).trim();
-      if (!payload || payload === "[DONE]") continue;
-      const part = JSON.parse(payload);
-      if (part.type === "text-delta") {
-        if (firstToken === null) firstToken = Date.now() - started;
-        text += part.delta;
-      }
-    }
-  }
-
-  return { text: text.trim(), cache, firstToken, total: Date.now() - started };
+  // The shared client rejects stream errors and incomplete/unavailable answers.
+  // Two identical fallback apologies must never pass as a successful cache hit.
+  const result = await askChat({ base: BASE, question, profile, history });
+  return { ...result, total: result.elapsed };
 }
 
 let failures = 0;

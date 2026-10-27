@@ -51,19 +51,19 @@ const RULES: Rule[] = [
   {
     reason: "medical",
     pattern:
-      /\b(sick|ill|illness|hospital|surgery|injur|covid|fever|emergency|family emergency|bereave|funeral|passed away|death in|mental health|panic attack)\b/i,
+      /\b(sick|ill|illness|hospital|surgery|injur\w*|covid|fever|emergency|family emergency|bereave\w*|funeral|passed away|death in|mental health|panic attack)\b/i,
     summary: "a medical or personal emergency affecting their work",
   },
   {
     reason: "accommodation",
     pattern:
-      /\b(accommodation|disability|dyslexi|adhd|accessibility|extra time on (the )?(exam|test)|learning support)\b/i,
+      /\b(accommodations?|disability|dyslexi\w*|adhd|accessibility|extra time on (the )?(exam|test)|learning support)\b/i,
     summary: "a request for accommodations",
   },
   {
     reason: "appeal",
     pattern:
-      /\b(appeal|dispute|contest(ing)?\s+(my|the)\s+grade|grade review|remark|re-?mark|regrade|re-?grade|formal complaint|unfair)\b/i,
+      /\b(appeal|dispute|contest(?:ing)?)\b[^.?!]{0,45}\b(grade|mark|score|result|assessment|decision|penalty)\b|\b(grade|mark|score)\b[^.?!]{0,30}\b(appeal|dispute|review|unfair)\b|\b(re-mark|re-?grade|formal complaint)\b|\bremark\s+(my|the)\s+(assignment|exam|work|essay|submission)\b/i,
     summary: "a formal request to have work re-examined",
   },
   {
@@ -75,7 +75,7 @@ const RULES: Rule[] = [
   {
     reason: "submission_problem",
     pattern:
-      /\b(canvas (is )?(down|broken|not working)|couldn'?t upload|upload failed|submission failed|wrong file|submitted the wrong|didn'?t go through|technical (issue|problem))\b/i,
+      /\b(canvas (?:(?:is|was) )?(down|broken|not working)|couldn'?t upload|upload failed|submission failed|wrong file|submitted the wrong|didn'?t go through|technical (issue|problem))\b/i,
     summary: "a technical problem with a submission",
   },
   {
@@ -96,7 +96,7 @@ const RULES: Rule[] = [
   {
     reason: "group_problem",
     pattern:
-      /\b(my (group|team|partner)|group ?mate|teammate)\b.*\b(not|isn'?t|won'?t|refus|prob|issue|doing nothing|disappear)\b/i,
+      /\b(my (group|team|partner)|group ?mate|teammate)\b.*\b(not|isn'?t|won'?t|refus\w*|problems?|issues?|doing nothing|disappear\w*)\b/i,
     summary: "a problem with a group or partner",
   },
   {
@@ -127,7 +127,7 @@ export type EmailNeed = {
  * so the offer stays rare enough to feel useful rather than like an upsell.
  */
 export function detectEmailNeed(message: string): EmailNeed | null {
-  const text = message.trim();
+  const text = message.replace(/[\u2018\u2019]/g, "'").trim();
   if (!text) return null;
 
   const explicit = EXPLICIT_REQUEST.test(text);
@@ -176,6 +176,10 @@ const DRAFT_GUIDANCE: Record<EmailReason, string> = {
 
 export function draftGuidance(reason: EmailReason): string {
   return DRAFT_GUIDANCE[reason] ?? DRAFT_GUIDANCE.general;
+}
+
+export function isEmailReason(value: unknown): value is EmailReason {
+  return typeof value === "string" && Object.hasOwn(DRAFT_GUIDANCE, value);
 }
 
 export type EmailDraft = { to: string; subject: string; body: string };
