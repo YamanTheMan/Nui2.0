@@ -1,13 +1,13 @@
 {
   "documents": {
     "D01_course_overview.txt": {
-      "id": "xGow4wr5iT7vdPSs6UGU",
-      "sha256": "cd3701815a34d0ece95a84757e73ec5f2664d56c9bf7c9b87e61b8d61aa3dc4d",
+      "id": "NG907lxskEAHIVAaZm4r",
+      "sha256": "877357b1145d1265c709776d98efd9ffa3dbcb43648134126c78030b5088d0b9",
       "name": "D01 course overview"
     },
     "D02_assignments.txt": {
-      "id": "9K2DbLxxWWeawtPwa719",
-      "sha256": "0d1784fac87a53dbda365d457205cf1617aced0c8bf37f9d6fc80cb9b55733dc",
+      "id": "34zPkTGLoxyjnSNU38mp",
+      "sha256": "7ced6fea81be209f0d4d196725b788527435a667d000d37f032fb6ff94164d7f",
       "name": "D02 assignments"
     },
     "D03_chapter1_strategy.txt": {
@@ -41,8 +41,8 @@
       "name": "D08 cultural IT topics"
     },
     "D09_prof_nui_persona.txt": {
-      "id": "YzGUANzl4NTQnvxbxmgN",
-      "sha256": "e8aa7079cc2e5f1a856a7b790cb67372c43700e2a8ddcd32270532ae95b5d5d0",
+      "id": "FwOxbgaBxRo1VGtRExLf",
+      "sha256": "c4193c369de7bf8965cba3f8cc8506a4a6cf0895c1579213745ff90b3569775c",
       "name": "D09 prof nui persona"
     },
     "D10_cultural_theories_scholarly.txt": {
@@ -61,9 +61,24 @@
       "name": "D12 virtual influencer scholarly"
     },
     "D13_2026_09_16_class_update.txt": {
-      "id": "56qcV3ZcPvUoRNjuF9Zb",
-      "sha256": "7e01fdbf34c9c9565fa306a5228d02c4484193d375059e7dc06c93e5bf8336f1",
+      "id": "qX5CCyji2aWlJwObaT6K",
+      "sha256": "41ea19463045a5097db692765c0fc0e77c4a70a5e49506cd00fe7fbd3d738115",
       "name": "D13 2026 09 16 class update"
+    },
+    "D14_fall_2026_deadlines_and_contacts.txt": {
+      "id": "EFPALbRWMocEC5nNJgie",
+      "sha256": "0bbc50763192d69652908e9568271ae5954a803eabf748ffb46f2da9dc931eea",
+      "name": "D14 fall 2026 deadlines and contacts"
+    },
+    "D15_fall_2026_cases_and_guest_talks.txt": {
+      "id": "gy0d0er8qBntbQHHhfKL",
+      "sha256": "5585ee0baca0285521c2c7da3f88b7e53981f6c975871183e31ff372056bdc30",
+      "name": "D15 fall 2026 cases and guest talks"
+    },
+    "D16_framework_example_presentations.txt": {
+      "id": "CuejZNHaOcHZrHqXi2fe",
+      "sha256": "0f43328efa13eccb6d1ab45ec52b8920708e5d3fb4c1b769ffbdc0f7bb924c57",
+      "name": "D16 framework example presentations"
     }
   }
 }
