@@ -12,6 +12,14 @@ import {
   liveDynamicVariables,
   liveSessionOpening,
 } from "../../lib/voice/language.ts";
+import {
+  ARABIC_CHARS_PER_SECOND,
+  captionOffsets,
+  currentCaptionIndex,
+  MAX_CAPTION,
+  splitCaptions,
+  updateSpeakingRate,
+} from "../../lib/voice/subtitles.ts";
 
 const originalFetch = globalThis.fetch;
 const fixtureEnv = {
@@ -185,6 +193,33 @@ test("the spoken answer to the address question is read conservatively", () => {
   for (const text of ["لا يهم", "ما هو موعد التسليم؟", "طالب أو طالبة، لا فرق", ""]) {
     assert.equal(detectArabicAddressAnswer(text), null, text);
   }
+});
+
+test("subtitles show one short caption at a time instead of a growing block", () => {
+  // The reply from a real Arabic session that used to fill half the video.
+  const reply = "Digital transformation is the process of using digital technology to change how organizations operate and deliver services. It involves integrating technology into all aspects of work, affecting how products and services are offered and how organizations interact with customers. The goal of digital transformation is to improve efficiency, increase the value delivered to customers, and create new growth opportunities. Do you have a specific question about this topic?";
+  const captions = splitCaptions(reply);
+  assert.ok(captions.length >= 4);
+  for (const caption of captions) assert.ok(caption.length <= MAX_CAPTION, caption);
+  assert.equal(captions.join(" "), reply);
+  // A very short sentence rides along with the next one.
+  assert.deepEqual(splitCaptions("Thank you, Yaman. How can I help you with digital transformation today?"), [
+    "Thank you, Yaman. How can I help you with digital transformation today?",
+  ]);
+  assert.deepEqual(splitCaptions("   "), []);
+});
+
+test("captions are paced across the speech and catch up when she joins mid-reply", () => {
+  const offsets = captionOffsets(["a".repeat(30), "b".repeat(60), "c".repeat(10)], 10_000);
+  assert.deepEqual(offsets, [0, 3000, 9000]);
+  assert.equal(currentCaptionIndex(offsets, 0), 0);
+  assert.equal(currentCaptionIndex(offsets, 3500), 1);
+  assert.equal(currentCaptionIndex(offsets, 60_000), 2);
+  assert.equal(updateSpeakingRate(13, 150, 10), 14);
+  assert.ok(ARABIC_CHARS_PER_SECOND > 5 && ARABIC_CHARS_PER_SECOND < 30);
+  assert.equal(updateSpeakingRate(13, 20, 10), 13);
+  assert.equal(updateSpeakingRate(13, 150, 1), 13);
+  assert.equal(updateSpeakingRate(13, 900, 10), 13);
 });
 
 test("provider errors and malformed provider responses do not expose private details or a usable session", async () => {

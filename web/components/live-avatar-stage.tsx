@@ -13,6 +13,15 @@ import {
   detectArabicAddressAnswer,
   type LiveLanguage,
 } from "@/lib/voice/language";
+import {
+  ARABIC_CHARS_PER_SECOND,
+  captionOffsets,
+  CATCH_UP_MS,
+  currentCaptionIndex,
+  LINGER_MS,
+  splitCaptions,
+  updateSpeakingRate,
+} from "@/lib/voice/subtitles";
 import type { Citation } from "./citations-panel";
 
 type Props = {
@@ -162,32 +171,122 @@ export default function LiveAvatarStage({
     // shared kiosk never carries one student's answer to the next.
     let addressAttemptsLeft = language === "ar" && !gender ? ADDRESS_ANSWER_ATTEMPTS : 0;
 
-    // Arabic only: English subtitles for what Nui says. One subtitle turn runs
-    // from the student's question to the next one; late translations from an
-    // earlier turn are dropped.
+    // Arabic only: English subtitles for what Nui says. Each reply replaces the
+    // previous one and is shown one short caption at a time, paced across her
+    // speech. A late translation of an older reply is dropped.
     const subtitles = language === "ar";
     const subtitleAbort = new AbortController();
-    let subtitleTurn = 0;
-    let subtitleParts: string[] = [];
-    let subtitleKeys = new Set<string>();
+    const captionTimers = new Set<ReturnType<typeof setTimeout>>();
+    let replySeq = 0;
+    let replyKeys = new Set<string>();
+    let speakingSince = 0;
+    let lastSpeechEndedAt = 0;
+    let captionAnchor = 0;
+    let captionChars = 0;
+    let captionQueue: string[] = [];
+    let captionIndex = 0;
+    let charsPerSecond = ARABIC_CHARS_PER_SECOND;
+    let waitingCaptions: { captions: string[]; chars: number } | null = null;
     let sawAvatarTranscript = false;
     let gotReplyText = false;
     let chunkText = "";
-    const resetSubtitles = () => {
-      subtitleTurn += 1;
-      subtitleParts = [];
-      subtitleKeys = new Set();
+    const clearCaptionTimers = () => {
+      for (const timer of captionTimers) clearTimeout(timer);
+      captionTimers.clear();
+    };
+    const captionLater = (callback: () => void, delay: number) => {
+      const timer = setTimeout(() => {
+        captionTimers.delete(timer);
+        if (isActive() && !ending) callback();
+      }, Math.max(0, delay));
+      captionTimers.add(timer);
+    };
+    const showCaption = (index: number) => {
+      captionIndex = index;
+      setSubtitle(captionQueue[index] ?? "");
+    };
+    const hideCaptions = () => {
+      clearCaptionTimers();
+      waitingCaptions = null;
+      captionQueue = [];
+      setSubtitle("");
+    };
+    const playCaptions = (captions: string[], chars: number, anchor: number) => {
+      clearCaptionTimers();
+      waitingCaptions = null;
+      captionQueue = captions;
+      captionAnchor = anchor;
+      captionChars = chars;
+      const offsets = captionOffsets(captions, (chars / charsPerSecond) * 1000);
+      const now = Date.now();
+      // Joining mid-reply starts at the caption that belongs on screen now.
+      showCaption(currentCaptionIndex(offsets, now - anchor));
+      for (let index = captionIndex + 1; index < captions.length; index += 1) {
+        const next = index;
+        captionLater(() => showCaption(next), anchor + offsets[next] - now);
+      }
+    };
+    // Shows captions from `from` onward at a brisk fixed pace, then clears the screen.
+    const catchUp = (from: number, firstDelay: number) => {
+      clearCaptionTimers();
+      waitingCaptions = null;
+      let delay = firstDelay;
+      for (let index = from; index < captionQueue.length; index += 1) {
+        const next = index;
+        captionLater(() => showCaption(next), delay);
+        delay += CATCH_UP_MS;
+      }
+      captionLater(hideCaptions, delay - CATCH_UP_MS + LINGER_MS);
+    };
+    const showReply = (english: string, chars: number, arrived: number) => {
+      const captions = splitCaptions(english);
+      if (captions.length === 0) return;
+      // Text normally arrives just before or as she starts saying it.
+      if (speakingSince && arrived - speakingSince < 4000) {
+        playCaptions(captions, chars, speakingSince);
+        return;
+      }
+      // She already finished saying it while the translation was on its way.
+      if (!speakingSince && lastSpeechEndedAt > arrived) {
+        captionQueue = captions;
+        catchUp(0, 0);
+        return;
+      }
+      clearCaptionTimers();
+      setSubtitle("");
+      captionQueue = [];
+      waitingCaptions = { captions, chars };
+      // If her speech never reports a start, show the reply anyway.
+      captionLater(() => {
+        if (waitingCaptions) playCaptions(waitingCaptions.captions, waitingCaptions.chars, Date.now());
+      }, 3000);
+    };
+    const finishCaptions = () => {
+      // Learn her real speaking rate so later replies keep pace.
+      if (captionAnchor && captionAnchor === speakingSince) {
+        charsPerSecond = updateSpeakingRate(charsPerSecond, captionChars, (Date.now() - captionAnchor) / 1000);
+      }
+      if (waitingCaptions || captionQueue.length === 0) return;
+      // She finished early: show what is left briskly, then clear the screen.
+      catchUp(captionIndex + 1, CATCH_UP_MS);
+    };
+    // The student's turn clears her last reply. Speech start also drops any
+    // translation still in flight; a transcript can arrive after her reply
+    // text, so it only clears the screen.
+    const studentSpoke = (startedSpeaking: boolean) => {
+      if (startedSpeaking) replySeq += 1;
+      replyKeys = new Set();
       gotReplyText = false;
       chunkText = "";
-      setSubtitle("");
+      hideCaptions();
     };
     const translate = (arabic: string) => {
       const text = arabic.trim().slice(0, 2000);
       const key = subtitleKey(text);
-      if (!subtitles || !key || subtitleKeys.has(key)) return;
-      subtitleKeys.add(key);
-      const turn = subtitleTurn;
-      const slot = subtitleParts.push("") - 1;
+      if (!subtitles || !key || replyKeys.has(key)) return;
+      replyKeys.add(key);
+      const seq = (replySeq += 1);
+      const arrived = Date.now();
       fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -196,10 +295,9 @@ export default function LiveAvatarStage({
       })
         .then((response) => (response.ok ? response.json() : null))
         .then((data: { english?: unknown } | null) => {
-          if (!isActive() || turn !== subtitleTurn) return;
+          if (!isActive() || ending || seq !== replySeq) return;
           if (typeof data?.english !== "string" || !data.english.trim()) return;
-          subtitleParts[slot] = data.english.trim();
-          setSubtitle(subtitleParts.filter(Boolean).join(" "));
+          showReply(data.english.trim(), key.length, arrived);
         })
         .catch(() => {
           /* subtitles are best-effort; the spoken answer is unaffected */
@@ -347,7 +445,7 @@ export default function LiveAvatarStage({
       });
       current.on(AgentEventsEnum.USER_SPEAK_STARTED, () => {
         if (!isActive() || ending) return;
-        if (subtitles) resetSubtitles();
+        if (subtitles) studentSpoke(true);
         if (avatarSpeakingRef.current) {
           try {
             current.interrupt();
@@ -367,15 +465,25 @@ export default function LiveAvatarStage({
         avatarSpeakingRef.current = true;
         setAvatarSpeaking(true);
         setStatus(copy.speaking);
+        if (subtitles) {
+          speakingSince = Date.now();
+          if (waitingCaptions) playCaptions(waitingCaptions.captions, waitingCaptions.chars, speakingSince);
+        }
       });
       current.on(AgentEventsEnum.AVATAR_SPEAK_ENDED, () => {
         if (!isActive() || ending) return;
         avatarSpeakingRef.current = false;
         setAvatarSpeaking(false);
         setStatus(copy.yourTurn);
-        // If only streamed chunks arrived for this reply, translate them now.
-        if (subtitles && !gotReplyText && chunkText) translate(chunkText);
-        chunkText = "";
+        if (subtitles) {
+          finishCaptions();
+          lastSpeechEndedAt = Date.now();
+          speakingSince = 0;
+          // If only streamed chunks arrived for this reply, translate them now.
+          if (!gotReplyText && chunkText) translate(chunkText);
+          gotReplyText = false;
+          chunkText = "";
+        }
         if (forceEndAfterSpeech) schedule(() => void stop(), 2800);
       });
       if (subtitles) {
@@ -398,9 +506,10 @@ export default function LiveAvatarStage({
         // Arabic, English and mixed requests itself and invokes end_call;
         // a partial browser count must never reset its conversation history.
         if (language === "ar") {
-          if (addressAttemptsLeft <= 0 || !isActive() || ending || seenTranscripts.has(event.event_id))
-            return;
+          if (!isActive() || ending || seenTranscripts.has(event.event_id)) return;
           seenTranscripts.add(event.event_id);
+          if (subtitles) studentSpoke(false);
+          if (addressAttemptsLeft <= 0) return;
           addressAttemptsLeft -= 1;
           const answer = detectArabicAddressAnswer(event.text);
           if (!answer) return;
@@ -439,6 +548,10 @@ export default function LiveAvatarStage({
       current.on(AgentEventsEnum.ELEVENLABS_AGENT_EVENT, (event) => {
         if (!isActive() || ending) return;
         const outer = asRecord(event.data);
+        if (subtitles && (event.elevenlabs_event_type === "user_transcript" || outer.type === "user_transcript")) {
+          studentSpoke(false);
+          return;
+        }
         if (subtitles && !sawAvatarTranscript &&
             (event.elevenlabs_event_type === "agent_response" || outer.type === "agent_response")) {
           const reply = asRecord(outer.agent_response_event).agent_response ?? outer.agent_response;
@@ -509,6 +622,7 @@ export default function LiveAvatarStage({
       cancelled = true;
       clearTimers();
       subtitleAbort.abort();
+      clearCaptionTimers();
       if (sessionRef.current === session) sessionRef.current = null;
       // Async errors must be caught; a synchronous try/catch cannot catch them.
       void session?.stop().catch(() => undefined);
