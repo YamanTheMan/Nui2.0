@@ -18,7 +18,9 @@ import {
   captionOffsets,
   CATCH_UP_MS,
   currentCaptionIndex,
+  foldResponsePart,
   LINGER_MS,
+  REPLY_QUIET_MS,
   splitCaptions,
   updateSpeakingRate,
 } from "@/lib/voice/subtitles";
@@ -187,7 +189,9 @@ export default function LiveAvatarStage({
     let captionIndex = 0;
     let charsPerSecond = ARABIC_CHARS_PER_SECOND;
     let waitingCaptions: { captions: string[]; chars: number } | null = null;
-    let sawAvatarTranscript = false;
+    let sawReplyStream = false;
+    let streamText = "";
+    let streamTimer: ReturnType<typeof setTimeout> | undefined;
     let gotReplyText = false;
     let chunkText = "";
     const clearCaptionTimers = () => {
@@ -275,10 +279,18 @@ export default function LiveAvatarStage({
     // text, so it only clears the screen.
     const studentSpoke = (startedSpeaking: boolean) => {
       if (startedSpeaking) replySeq += 1;
+      clearTimeout(streamTimer);
+      streamText = "";
       replyKeys = new Set();
       gotReplyText = false;
       chunkText = "";
       hideCaptions();
+    };
+    const translateStream = () => {
+      clearTimeout(streamTimer);
+      if (!streamText.trim()) return;
+      gotReplyText = true;
+      translate(streamText);
     };
     const translate = (arabic: string) => {
       const text = arabic.trim().slice(0, 2000);
@@ -487,9 +499,11 @@ export default function LiveAvatarStage({
         if (forceEndAfterSpeech) schedule(() => void stop(), 2800);
       });
       if (subtitles) {
+        // The avatar's transcript only arrives as she finishes speaking, too
+        // late for subtitles. It is the fallback for a session that never
+        // forwards ElevenLabs' reply text.
         current.on(AgentEventsEnum.AVATAR_TRANSCRIPTION, (event) => {
-          if (!isActive() || ending) return;
-          sawAvatarTranscript = true;
+          if (!isActive() || ending || sawReplyStream) return;
           gotReplyText = true;
           translate(event.text);
         });
@@ -552,10 +566,23 @@ export default function LiveAvatarStage({
           studentSpoke(false);
           return;
         }
-        if (subtitles && !sawAvatarTranscript &&
-            (event.elevenlabs_event_type === "agent_response" || outer.type === "agent_response")) {
+        const elevenLabsType = event.elevenlabs_event_type ?? outer.type;
+        if (subtitles && elevenLabsType === "agent_chat_response_part") {
+          // The reply streams in before or as she starts speaking: translate it
+          // as soon as it ends, or after a short pause if no stop part comes.
+          sawReplyStream = true;
+          const folded = foldResponsePart(streamText, asRecord(outer.text_response_part));
+          streamText = folded.text;
+          clearTimeout(streamTimer);
+          if (folded.done) translateStream();
+          else if (streamText) streamTimer = setTimeout(translateStream, REPLY_QUIET_MS);
+          return;
+        }
+        if (subtitles && elevenLabsType === "agent_response") {
+          // Usually a duplicate of the streamed text, dropped by the reply dedupe.
           const reply = asRecord(outer.agent_response_event).agent_response ?? outer.agent_response;
           if (typeof reply === "string") {
+            sawReplyStream = true;
             gotReplyText = true;
             translate(reply);
           }
@@ -623,6 +650,7 @@ export default function LiveAvatarStage({
       clearTimers();
       subtitleAbort.abort();
       clearCaptionTimers();
+      clearTimeout(streamTimer);
       if (sessionRef.current === session) sessionRef.current = null;
       // Async errors must be caught; a synchronous try/catch cannot catch them.
       void session?.stop().catch(() => undefined);

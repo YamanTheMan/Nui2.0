@@ -16,7 +16,9 @@ import {
   ARABIC_CHARS_PER_SECOND,
   captionOffsets,
   currentCaptionIndex,
+  foldResponsePart,
   MAX_CAPTION,
+  REPLY_QUIET_MS,
   splitCaptions,
   updateSpeakingRate,
 } from "../../lib/voice/subtitles.ts";
@@ -220,6 +222,20 @@ test("captions are paced across the speech and catch up when she joins mid-reply
   assert.equal(updateSpeakingRate(13, 20, 10), 13);
   assert.equal(updateSpeakingRate(13, 150, 1), 13);
   assert.equal(updateSpeakingRate(13, 900, 10), 13);
+});
+
+test("subtitles start from the streamed reply text, not the late complete-reply event", () => {
+  let reply = { text: "stale", done: false };
+  for (const part of [
+    { type: "start", text: "" },
+    { type: "delta", text: "مرحبًا،" },
+    { type: "delta", text: " أنا نوي" },
+    { type: "delta", text: 42 },
+    { type: "ping" },
+  ]) reply = foldResponsePart(reply.text, part);
+  assert.deepEqual(reply, { text: "مرحبًا، أنا نوي", done: false });
+  assert.deepEqual(foldResponsePart(reply.text, { type: "stop", text: "" }), { text: "مرحبًا، أنا نوي", done: true });
+  assert.ok(REPLY_QUIET_MS > 0 && REPLY_QUIET_MS <= 500);
 });
 
 test("provider errors and malformed provider responses do not expose private details or a usable session", async () => {

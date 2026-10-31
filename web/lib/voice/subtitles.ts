@@ -89,3 +89,21 @@ export function updateSpeakingRate(current: number, characters: number, seconds:
   if (measured < 5 || measured > 30) return current;
   return current * 0.5 + measured * 0.5;
 }
+
+/**
+ * ElevenLabs streams each reply's text as start, delta and stop parts, all
+ * within a fraction of a second and before or as she starts speaking. That is
+ * the earliest text for subtitles. Its complete-reply event can lag by seconds
+ * or never arrive, and the avatar's own transcript only comes as she finishes.
+ */
+export type ResponsePart = { type?: unknown; text?: unknown };
+
+/** Folds one streamed part into the reply text so far. */
+export function foldResponsePart(text: string, part: ResponsePart): { text: string; done: boolean } {
+  if (part.type === "start") return { text: "", done: false };
+  if (part.type === "stop") return { text, done: true };
+  return { text: part.type === "delta" && typeof part.text === "string" ? text + part.text : text, done: false };
+}
+
+/** A pause this long in the stream means the reply is complete even without a stop part. */
+export const REPLY_QUIET_MS = 250;
