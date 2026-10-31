@@ -148,6 +148,54 @@ test("browse and read actual course materials, then prepare a question", async (
   );
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
+test("a chat can be emailed as a short recap to an Andrew address", async ({
+  page,
+}) => {
+  const recaps: unknown[] = [];
+  await page.route("**/api/recap", (route) => {
+    if (route.request().method() === "GET")
+      return route.fulfill({ json: { enabled: true } });
+    recaps.push(route.request().postDataJSON());
+    return route.fulfill({ json: { sent: true } });
+  });
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/event-stream",
+      headers: { "x-vercel-ai-ui-message-stream": "v1" },
+      body: reply("The final report is due Monday 23 November."),
+    }),
+  );
+  await signIn(page);
+  await expect(page.getByRole("button", { name: "Email me a recap" })).toHaveCount(0);
+  await page
+    .getByLabel("Your question for Prof Nui")
+    .fill("When is the final project due?");
+  await page.getByRole("button", { name: "Send question" }).click();
+  await expect(page.getByRole("log")).toContainText("23 November");
+  await page.getByRole("button", { name: "Email me a recap" }).click();
+  const field = page.getByRole("textbox", { name: /Send a short recap/ });
+  await field.fill("someone@gmail.com");
+  await page.getByRole("button", { name: "Send recap" }).click();
+  await expect(page.getByText("Use your @andrew.cmu.edu address.")).toBeVisible();
+  expect(recaps).toEqual([]);
+  await field.fill("Sara.Ali@andrew.cmu.edu");
+  await page.getByRole("button", { name: "Send recap" }).click();
+  await expect(
+    page.getByText("Recap sent to sara.ali@andrew.cmu.edu."),
+  ).toBeVisible();
+  expect(recaps).toEqual([
+    {
+      email: "sara.ali@andrew.cmu.edu",
+      name: "",
+      turns: [
+        { role: "student", text: "When is the final project due?" },
+        { role: "nui", text: "The final report is due Monday 23 November." },
+      ],
+    },
+  ]);
+});
+
 test("chat, safe rich text, sources, tab continuity and reset", async ({
   page,
 }) => {

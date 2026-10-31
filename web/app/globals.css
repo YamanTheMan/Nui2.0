@@ -2606,6 +2606,66 @@ svg {
   text-align: center;
   text-shadow: 0 1px 2px rgb(0 0 0 / 60%);
 }
+/* Email recaps: optional field before a live session, and a button in chat. */
+.live-recap-email {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: min(100%, 380px);
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--ink);
+}
+.live-recap-email input,
+.recap-form input {
+  padding: 11px 12px;
+  background: white;
+  border: 1px solid #f5dfe9;
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  width: 100%;
+}
+.live-recap-email span {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.live-welcome p.live-recap-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--forest);
+}
+.recap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 0 4px;
+}
+.recap-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+  color: #795066;
+}
+.recap-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.composer-hint {
+  flex-wrap: wrap;
+}
+.composer-hint .recap-open {
+  font-size: 11px;
+}
+.composer-hint .recap-form {
+  order: 3;
+  flex-basis: 100%;
+  font-size: 13px;
+}
 .live-language-select:disabled label {
   cursor: wait;
   opacity: 0.65;

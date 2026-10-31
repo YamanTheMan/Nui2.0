@@ -44,7 +44,9 @@ test("only text is forwarded and profiles are bounded", () => {
   assert.equal(parsed.profile.name, "Sara Ali");
   assert.equal(parsed.profile.major.length, 120);
   assert.equal(parsed.profile.year, "");
-  assert.deepEqual(normaliseProfile([]), { name: "", major: "", year: "", gender: "" });
+  assert.deepEqual(normaliseProfile([]), { name: "", major: "", year: "", gender: "", email: "" });
+  // The recap address is never accepted with a question.
+  assert.equal(normaliseProfile({ email: "sara@andrew.cmu.edu" }).email, "");
   assert.equal(normaliseProfile({ gender: "female" }).gender, "female");
   assert.equal(normaliseProfile({ gender: "Female " }).gender, "");
 });

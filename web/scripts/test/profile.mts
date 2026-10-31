@@ -46,7 +46,7 @@ test("invalid and legacy saved data always produces safe string fields", () => {
   }
   stored = JSON.stringify({ name: "  Ada\nLovelace  ", major: "M".repeat(300), year: "  Junior\u0000 " });
   // Profiles saved before the Arabic address setting load as "ask the student".
-  assert.deepEqual(getSnapshot(), { name: "Ada Lovelace", major: "M".repeat(120), year: "Junior", gender: "" });
+  assert.deepEqual(getSnapshot(), { name: "Ada Lovelace", major: "M".repeat(120), year: "Junior", gender: "", email: "" });
   stored = JSON.stringify({ name: "Ada", gender: "<b>female</b>" });
   assert.equal(getSnapshot().gender, "");
   stored = JSON.stringify({ name: "Ada", gender: "female" });
@@ -97,12 +97,12 @@ test("successful storage recovery resumes persisted and cross-tab updates", () =
 test("local subscribers receive normalized edits and can unsubscribe", () => {
   let notified = 0;
   const unsubscribe = subscribe(() => { notified += 1; });
-  saveProfile({ name: " Ada\n ", major: " IS ", year: "", gender: "male" });
+  saveProfile({ name: " Ada\n ", major: " IS ", year: "", gender: "male", email: " Ada@Andrew.cmu.edu " });
   assert.equal(notified, 1);
-  assert.deepEqual(getSnapshot(), { name: "Ada", major: "IS", year: "", gender: "male" });
+  assert.deepEqual(getSnapshot(), { name: "Ada", major: "IS", year: "", gender: "male", email: "ada@andrew.cmu.edu" });
   assert.equal(storageListeners.size, 1);
   unsubscribe();
-  saveProfile({ name: "New", major: "", year: "", gender: "" });
+  saveProfile({ name: "New", major: "", year: "", gender: "", email: "" });
   assert.equal(notified, 1);
   assert.equal(storageListeners.size, 0);
 });

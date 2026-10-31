@@ -11,6 +11,7 @@ import {
   arabicAddressNote,
   arabicGreetingFollowUp,
   detectArabicAddressAnswer,
+  LIVE_READY_MESSAGES,
   type LiveLanguage,
 } from "@/lib/voice/language";
 import {
@@ -24,6 +25,7 @@ import {
   splitCaptions,
   updateSpeakingRate,
 } from "@/lib/voice/subtitles";
+import type { RecapTurn } from "@/lib/recap/summarize";
 import type { Citation } from "./citations-panel";
 
 type Props = {
@@ -35,6 +37,8 @@ type Props = {
   studentFirstName: string;
   onCitation: (citation: Citation) => void;
   onEnded: (reason?: string) => void;
+  /** Each final thing the student or Nui said, for the email recap. */
+  onTurn?: (turn: RecapTurn) => void;
 };
 
 const FINAL_GOODBYE_GRACE_MS = 14000;
@@ -133,6 +137,7 @@ export default function LiveAvatarStage({
   studentFirstName,
   onCitation,
   onEnded,
+  onTurn,
 }: Props) {
   const copy = COPY[language];
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -149,10 +154,12 @@ export default function LiveAvatarStage({
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const onCitationRef = useRef(onCitation);
   const onEndedRef = useRef(onEnded);
+  const onTurnRef = useRef(onTurn);
 
   useEffect(() => {
     onCitationRef.current = onCitation;
     onEndedRef.current = onEnded;
+    onTurnRef.current = onTurn;
   });
 
   useEffect(() => {
@@ -406,11 +413,7 @@ export default function LiveAvatarStage({
             );
             schedule(() => {
               try {
-                current.sendUserMessage(
-                  language === "ar"
-                    ? "مرحبًا، أنا مستعد لبدء المحادثة بالعربية الفصحى."
-                    : "Hi, I'm ready for your greeting.",
-                );
+                current.sendUserMessage(LIVE_READY_MESSAGES[language]);
                 setStatus(copy.introducing);
               } catch {
                 setStatus(copy.hello);
@@ -623,6 +626,27 @@ export default function LiveAvatarStage({
         } catch {
           /* tool response is best-effort */
         }
+      });
+
+      // Email recap: report each student and Nui turn. Several events can
+      // carry the same text; the panel keeps one copy of each.
+      const reportTurn = (role: RecapTurn["role"], text: unknown) => {
+        if (isActive() && typeof text === "string" && text.trim())
+          onTurnRef.current?.({ role, text });
+      };
+      current.on(AgentEventsEnum.USER_TRANSCRIPTION, (event) =>
+        reportTurn("student", event.text),
+      );
+      current.on(AgentEventsEnum.AVATAR_TRANSCRIPTION, (event) =>
+        reportTurn("nui", event.text),
+      );
+      current.on(AgentEventsEnum.ELEVENLABS_AGENT_EVENT, (event) => {
+        const data = asRecord(event.data);
+        const type = event.elevenlabs_event_type ?? data.type;
+        if (type === "user_transcript")
+          reportTurn("student", asRecord(data.user_transcription_event).user_transcript ?? data.user_transcript);
+        if (type === "agent_response")
+          reportTurn("nui", asRecord(data.agent_response_event).agent_response ?? data.agent_response);
       });
 
       await current.start();

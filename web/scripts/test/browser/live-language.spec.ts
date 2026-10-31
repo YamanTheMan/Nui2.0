@@ -48,6 +48,9 @@ test("chooses language before starting, keeps English voice and saved profile, s
   const requests: Record<string, unknown>[] = [];
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/recap", (route) =>
+    route.fulfill({ json: { enabled: true } }),
+  );
   await page.route("**/api/live-session", (route) => {
     if (route.request().method() === "GET")
       return route.fulfill({ json: { languages: { en: true, ar: true } } });
@@ -106,6 +109,18 @@ test("chooses language before starting, keeps English voice and saved profile, s
     fullPage: true,
     animations: "disabled",
   });
+  // The recap address is per session and must be an Andrew address.
+  const recapField = page.locator(".live-recap-email input");
+  await expect(recapField).toHaveValue("");
+  await recapField.fill("someone@gmail.com");
+  await page
+    .getByRole("button", { name: "ابدأ المحادثة", exact: true })
+    .click();
+  await expect(
+    page.locator(".live-conversation").getByRole("alert"),
+  ).toContainText("andrew.cmu.edu");
+  expect(requests).toEqual([]);
+  await recapField.fill("test.student@andrew.cmu.edu");
   await page
     .getByRole("button", { name: "ابدأ المحادثة", exact: true })
     .click();

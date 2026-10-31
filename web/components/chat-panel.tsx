@@ -1,12 +1,15 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { firstName, type StudentProfile } from "@/lib/student/profile";
+import { firstName, questionProfile, type StudentProfile } from "@/lib/student/profile";
+import { useRecapEnabled } from "@/lib/recap/client";
+import type { RecapTurn } from "@/lib/recap/summarize";
 import { sourceTitle } from "@/lib/course-catalog";
 import EmailDraftCard, { type EmailOffer } from "./email-draft-card";
 import type { Citation, CourseSource } from "./citations-panel";
 import MessageText from "./message-text";
 import Icon, { BrandMark, type IconName } from "./ui-icon";
+import RecapEmailButton from "./recap-email-button";
 
 const STARTERS: Record<
   string,
@@ -142,6 +145,8 @@ export default function ChatPanel({
   const bottom = useRef<HTMLDivElement>(null);
   const following = useRef(true);
   const busy = status === "streaming" || status === "submitted";
+  // The recap address never travels with a question.
+  const askingProfile = useMemo(() => questionProfile(profile), [profile]);
   useEffect(
     () => () => {
       void stop();
@@ -194,7 +199,7 @@ export default function ChatPanel({
     if (!text.trim() || busy || ended) return;
     following.current = true;
     clearError();
-    void sendMessage({ text: text.trim() }, { body: { profile } }).catch(
+    void sendMessage({ text: text.trim() }, { body: { profile: askingProfile } }).catch(
       () => {},
     );
     setInput("");
@@ -202,9 +207,21 @@ export default function ChatPanel({
   const retry = () => {
     clearError();
     following.current = true;
-    void regenerate({ body: { profile } }).catch(() => {});
+    void regenerate({ body: { profile: askingProfile } }).catch(() => {});
   };
   const hasMessages = messages.length > 0;
+  const recapEnabled = useRecapEnabled();
+  const recapTurns = (): RecapTurn[] =>
+    messages
+      .filter((message) => message.role === "user" || message.role === "assistant")
+      .map((message) => ({
+        role: message.role === "user" ? ("student" as const) : ("nui" as const),
+        text: message.parts
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join(" ")
+          .trim(),
+      }))
+      .filter((turn) => turn.text);
   return (
     <section
       className={`chat-view view-enter ${hasMessages ? "has-conversation" : ""}`}
@@ -496,6 +513,9 @@ export default function ChatPanel({
           <span>
             <Icon name="book" size={12} /> Grounded in your course materials
           </span>
+          {recapEnabled && hasMessages ? (
+            <RecapEmailButton profile={profile} turns={recapTurns} />
+          ) : null}
           <span>
             Enter to send <b>·</b> Shift + Enter for a new line
           </span>

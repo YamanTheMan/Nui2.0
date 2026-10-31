@@ -20,7 +20,8 @@
     "test:browser": "playwright test",
     "test:runtime": "node --import tsx scripts/test/runtime.mts",
     "test:profile": "node --import tsx scripts/test/profile.mts",
-    "test:offline": "node --import tsx scripts/test/retrieval.mts && node --import tsx scripts/test/runtime.mts && node --import tsx scripts/test/profile.mts && node --import tsx scripts/test/live-language.mts",
+    "test:offline": "node --import tsx scripts/test/retrieval.mts && node --import tsx scripts/test/runtime.mts && node --import tsx scripts/test/profile.mts && node --import tsx scripts/test/live-language.mts && node --import tsx scripts/test/recap.mts",
+    "test:recap": "node --import tsx scripts/test/recap.mts",
     "format": "prettier --write app components lib scripts/test/browser playwright.config.ts"
   },
   "dependencies": {

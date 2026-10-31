@@ -44,7 +44,8 @@ export function normaliseProfile(input: unknown): StudentProfile {
   const field = (value: unknown) => typeof value === "string"
     ? value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120)
     : "";
-  return { name: field(raw.name), major: field(raw.major), year: field(raw.year), gender: normaliseGender(raw.gender) };
+  // The recap address is only ever sent to /api/recap, never with a question.
+  return { name: field(raw.name), major: field(raw.major), year: field(raw.year), gender: normaliseGender(raw.gender), email: "" };
 }
 
 export function parseChatRequest(payload: unknown): { turns: ChatTurn[]; profile: StudentProfile } {

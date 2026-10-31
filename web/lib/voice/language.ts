@@ -8,6 +8,12 @@ import {
 
 export type LiveLanguage = "en" | "ar";
 
+/** Sent on the student's behalf to start the greeting. Not something they said. */
+export const LIVE_READY_MESSAGES: Record<LiveLanguage, string> = {
+  en: "Hi, I'm ready for your greeting.",
+  ar: "مرحبًا، أنا مستعد لبدء المحادثة بالعربية الفصحى.",
+};
+
 export function isLiveLanguage(value: unknown): value is LiveLanguage {
   return value === "en" || value === "ar";
 }

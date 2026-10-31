@@ -4,10 +4,13 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import {
   firstName,
+  normaliseAndrewEmail,
+  questionProfile,
   type StudentGender,
   type StudentProfile,
 } from "@/lib/student/profile";
-import type { LiveLanguage } from "@/lib/voice/language";
+import { sendRecap, TurnLog, useRecapEnabled } from "@/lib/recap/client";
+import { LIVE_READY_MESSAGES, type LiveLanguage } from "@/lib/voice/language";
 import { citationKey, type Citation } from "./citations-panel";
 import Icon from "./ui-icon";
 
@@ -20,6 +23,8 @@ type SessionState = {
   openingMessage: string;
   language: LiveLanguage;
   gender: StudentGender;
+  /** Where to send the recap when this session ends; empty for none. */
+  recapTo: string;
 };
 
 // Arabic grammar differs for men and women. This choice applies to one session
@@ -55,6 +60,12 @@ const COPY = {
     retry: "Check again",
     startError: "Could not start the session. Please try again.",
     tip: "Allow microphone access when prompted. You can interrupt by speaking, mute your mic, or end the session at any time. Leaving this view ends the live session.",
+    recapLabel: "Email me a recap (optional)",
+    recapHelp:
+      "When the session ends, Nui 2.0 emails a short recap and your next deadlines.",
+    recapInvalid: "Use your @andrew.cmu.edu address, or leave it empty.",
+    recapSending: "Sending your recap…",
+    recapSent: "Recap sent to",
   },
   ar: {
     eyebrow: "لنتحدث معًا",
@@ -72,6 +83,12 @@ const COPY = {
     retry: "تحقق مرة أخرى",
     startError: "تعذر بدء المحادثة بالعربية. يرجى المحاولة مرة أخرى.",
     tip: "اسمح باستخدام الميكروفون عند الطلب. يمكنك المقاطعة بالتحدث، أو كتم الميكروفون، أو إنهاء الجلسة في أي وقت. مغادرة هذه الصفحة تنهي الجلسة المباشرة.",
+    recapLabel: "أرسل لي ملخصًا بالبريد (اختياري)",
+    recapHelp:
+      "عند انتهاء الجلسة، ترسل نُوي 2.0 ملخصًا قصيرًا ومواعيد التسليم القادمة إلى بريد Andrew.",
+    recapInvalid: "استخدم بريدك @andrew.cmu.edu أو اترك الحقل فارغًا.",
+    recapSending: "جارٍ إرسال الملخص…",
+    recapSent: "تم إرسال الملخص إلى",
   },
 } as const;
 
@@ -85,6 +102,12 @@ function LiveConversation({ profile, onCitation }: Props) {
   const [voiceId, setVoiceId] = useState("");
   const [language, setLanguage] = useState<LiveLanguage>("en");
   const [gender, setGender] = useState<StudentGender>(profile.gender);
+  const recapEnabled = useRecapEnabled();
+  // Per session and visible before starting, so a shared kiosk never
+  // silently emails the previous student.
+  const [recapEmail, setRecapEmail] = useState(profile.email);
+  const [recapNote, setRecapNote] = useState<string | null>(null);
+  const turns = useRef<TurnLog | null>(null);
   const [languages, setLanguages] = useState<Record<
     LiveLanguage,
     boolean
@@ -137,6 +160,12 @@ function LiveConversation({ profile, onCitation }: Props) {
 
   const startSession = async () => {
     if (loading || !languages?.[language]) return;
+    const recapTo = recapEnabled ? normaliseAndrewEmail(recapEmail) : "";
+    if (recapEnabled && recapEmail.trim() && !recapTo) {
+      setError(copy.recapInvalid);
+      return;
+    }
+    setRecapNote(null);
     const controller = new AbortController();
     request.current = controller;
     setLoading(true);
@@ -146,7 +175,10 @@ function LiveConversation({ profile, onCitation }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profile: language === "ar" ? { ...profile, gender } : profile,
+          profile: {
+            ...questionProfile(profile),
+            ...(language === "ar" ? { gender } : {}),
+          },
           language,
           ...(language === "en" ? { voiceId } : {}),
         }),
@@ -173,7 +205,9 @@ function LiveConversation({ profile, onCitation }: Props) {
           openingMessage: data.openingMessage,
           language,
           gender: language === "ar" ? gender : "",
+          recapTo,
         });
+      turns.current = new TurnLog(Object.values(LIVE_READY_MESSAGES));
     } catch (err) {
       if (!controller.signal.aborted)
         setError(err instanceof Error ? err.message : copy.startError);
@@ -197,9 +231,18 @@ function LiveConversation({ profile, onCitation }: Props) {
           openingMessage={session.openingMessage}
           studentFirstName={firstName(profile.name)}
           onCitation={onCitation}
+          onTurn={(turn) => turns.current?.add(turn)}
           onEnded={(reason) => {
             setSession(null);
             setError(reason || null);
+            const said = turns.current?.list() ?? [];
+            turns.current = null;
+            if (!session.recapTo || !said.some((turn) => turn.role === "student")) return;
+            const to = session.recapTo;
+            setRecapNote(copy.recapSending);
+            void sendRecap(to, profile.name, said).then((result) =>
+              setRecapNote(result.sent ? `${copy.recapSent} ${to}` : result.error),
+            );
           }}
         />
       ) : (
@@ -311,6 +354,26 @@ function LiveConversation({ profile, onCitation }: Props) {
               </button>
             </div>
           ) : null}
+          {recapEnabled ? (
+            <label className="live-recap-email">
+              {copy.recapLabel}
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                maxLength={100}
+                value={recapEmail}
+                placeholder="you@andrew.cmu.edu"
+                disabled={loading}
+                onChange={(event) => {
+                  setRecapEmail(event.target.value);
+                  setError(null);
+                }}
+              />
+              <span>{copy.recapHelp}</span>
+            </label>
+          ) : null}
           <button
             type="button"
             className="button primary"
@@ -325,6 +388,11 @@ function LiveConversation({ profile, onCitation }: Props) {
             <div className="error-note" role="alert">
               {error}
             </div>
+          ) : null}
+          {recapNote ? (
+            <p className="live-recap-note" role="status">
+              {recapNote}
+            </p>
           ) : null}
         </div>
       )}

@@ -6,7 +6,7 @@
  * Snapshots are cached because useSyncExternalStore requires a stable reference.
  */
 
-import { EMPTY_PROFILE, normaliseGender, type StudentProfile } from "./profile";
+import { EMPTY_PROFILE, normaliseAndrewEmail, normaliseGender, type StudentProfile } from "./profile";
 
 const STORAGE_KEY = "askprofnui.profile";
 
@@ -42,6 +42,7 @@ function normalise(input: unknown): StudentProfile {
     major: field(raw.major),
     year: field(raw.year),
     gender: normaliseGender(raw.gender),
+    email: normaliseAndrewEmail(raw.email),
   };
 }
 

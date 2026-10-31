@@ -9,9 +9,25 @@ export type StudentProfile = {
   major: string;
   year: string;
   gender: StudentGender;
+  /** Andrew email for session recaps. Never sent with chat questions. */
+  email: string;
 };
 
-export const EMPTY_PROFILE: StudentProfile = { name: "", major: "", year: "", gender: "" };
+export const EMPTY_PROFILE: StudentProfile = { name: "", major: "", year: "", gender: "", email: "" };
+
+const ANDREW_EMAIL = /^[a-z0-9](?:[a-z0-9._+-]{0,62}[a-z0-9])?@andrew\.cmu\.edu$/;
+
+/** The profile as sent with a question or live session: never the recap address. */
+export function questionProfile({ name, major, year, gender }: StudentProfile): Omit<StudentProfile, "email"> {
+  return { name, major, year, gender };
+}
+
+/** Lower-cased Andrew address, or "" when the value is not one. */
+export function normaliseAndrewEmail(value: unknown): string {
+  if (typeof value !== "string") return "";
+  const email = value.trim().toLowerCase();
+  return ANDREW_EMAIL.test(email) ? email : "";
+}
 
 export function normaliseGender(value: unknown): StudentGender {
   return value === "female" || value === "male" ? value : "";

@@ -57,6 +57,12 @@ Shared cached answers are restricted to independent course questions. The model 
 
 Provider quotas can still prevent generation. Error states and caching make these failures clear and recoverable; they do not increase the account's quota.
 
+## Email recaps
+
+Students can get a short recap email (what they covered, next steps, and the next real deadlines with days left) at their `@andrew.cmu.edu` address. Live sessions send it automatically when the session ends if the student filled the optional field on the start screen; text chats have an "Email me a recap" button. Deadlines come from `lib/recap/deadlines.ts`, which a test keeps in sync with D14. Transcripts are used for one email and never stored or logged; each address gets at most five recaps an hour per server instance.
+
+Recaps stay hidden until `RESEND_API_KEY` and `RECAP_FROM` (an address on a domain verified in Resend) are set; `RECAP_REPLY_TO` is optional. Tests: `npm run test:recap`.
+
 ## Voice knowledge
 
 The voice assistant is a separate ElevenLabs agent, with its own prompt and hosted knowledge. Editing the text index alone does not update it.
