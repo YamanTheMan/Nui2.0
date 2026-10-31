@@ -85,6 +85,16 @@ test("chooses language before starting, keeps English voice and saved profile, s
     page.getByRole("combobox", { name: "Voice", exact: true }),
   ).toHaveCount(0);
   await expect(page.getByText("الصوت: نُوي · العربية الفصحى")).toBeVisible();
+  // Without a saved preference Nui asks; a choice here applies to this session only.
+  await expect(
+    page.getByRole("radio", { name: "تسألني نُوي في البداية", exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.getByText("English subtitles appear on the video while Nui 2.0 speaks Arabic."),
+  ).toBeVisible();
+  await page
+    .getByRole("radio", { name: "بصيغة المؤنث (طالبة)", exact: true })
+    .check();
   expect(requests).toEqual([]);
   expect(
     await page.evaluate(
@@ -102,7 +112,9 @@ test("chooses language before starting, keeps English voice and saved profile, s
   await expect(
     page.locator(".live-conversation").getByRole("alert"),
   ).toContainText("تعذر بدء المحادثة بالعربية");
-  expect(requests).toEqual([{ profile, language: "ar" }]);
+  expect(requests).toEqual([
+    { profile: { ...profile, gender: "female" }, language: "ar" },
+  ]);
   await page.getByRole("radio", { name: "English", exact: true }).check();
   await expect(
     page.getByRole("combobox", { name: "Voice", exact: true }),
@@ -114,7 +126,11 @@ test("chooses language before starting, keeps English voice and saved profile, s
   await expect(
     page.locator(".live-conversation").getByRole("alert"),
   ).toContainText("Mock session unavailable");
-  expect(requests[1]).toEqual({ profile, language: "en", voiceId: "other-en" });
+  expect(requests[1]).toEqual({
+    profile: { ...profile, gender: "" },
+    language: "en",
+    voiceId: "other-en",
+  });
   expect(
     await page.evaluate(() =>
       JSON.parse(localStorage.getItem("askprofnui.profile")!),

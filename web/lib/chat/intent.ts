@@ -76,7 +76,7 @@ const ABOUT_ASSISTANT_PATTERN =
   /\b(are|r)\s+(you|u)\s+(actually\s+|really\s+|even\s+|just\s+|truly\s+|some\s+kind\s+of\s+)*(an?\s+)?(ai|a\.i\.|bot|robot|human|real\s+person|person|chatgpt|gpt|machine|program|conscious|sentient|alive)\b|\bwho\s+(are|r)\s+(you|u)\b|\bwhat\s+are\s+you\b|\byour\s+name\b|\bare\s+you\s+prof(essor)?\s+nui\b|\bdo\s+you\s+have\s+(feelings|emotions)\b|\bhow\s+do\s+you\s+work\b|\bwhat\s+model\s+(?:are\s+you|do\s+you\s+use|powers\s+you)\b|\bam\s+i\s+(talking|speaking)\s+to\s+(a\s+)?(bot|robot|human|ai|person)\b/i;
 
 const SOCIAL_PATTERN =
-  /^(hi|hello|hey|yo|sup|hiya|salam|salaam|good morning|good afternoon|good evening|how are you|how're you|how r u|what's up|whats up|wassup|thanks|thank you|thx|ty|ok|okay|cool|nice|got it|bye|goodbye|see you|see ya|later|good night|gn)[!.?\s]*$/i;
+  /^(hi|hello|hey|yo|sup|hiya|salam|salaam|good morning|good afternoon|good evening|how are you|how're you|how r u|what's up|whats up|wassup|thanks|thank you|thx|ty|ok|okay|cool|nice|got it|bye|goodbye|see you|see ya|later|good night|gn|مرحبا|مرحبًا|أهلا|أهلًا|اهلا|السلام عليكم|شكرا|شكرًا|كيف حالك)[!.?؟،\s]*$/i;
 
 const HUMOR_OFFTOPIC_PATTERN =
   /\b(?:weather|wether|rain|raining|sunny|cloudy|hot outside|cold outside|temperature|forecast|humid|tell me a joke|make me laugh|something funny|sing|rap\b|dance for me|what should i eat|lunch|dinner|breakfast|pizza|burger|shawarma|karak|football|soccer|basketball|nba|world cup|who won|game last night|netflix|movie tonight|party tonight|weekend plans|marry me|do you love me|are you single)\b/i;
@@ -117,6 +117,11 @@ const COURSE_MARKERS = [
   // in this course only ever means sneaking out of class, so every phrasing of
   // it has to reach the course material rather than being treated as off topic.
   "ninja", "coffee bean", "talabat", "mazeeda", "k-pop", "kpop",
+  // Typed Arabic. Used when the English search translation is unavailable.
+  "واجب", "مهمة", "مشروع", "مقال", "تسليم", "موعد", "مواعيد", "درجة", "درجات", "علامة", "تقييم",
+  "حضور", "غياب", "تأخير", "تأخر", "نظرية", "إطار", "نموذج", "ثقاف", "تكنولوجيا", "تقنية",
+  "التحول الرقمي", "المقرر", "المادة", "المحاضرة", "ساعات المكتب", "المساعد", "المنهج",
+  "الجدول", "الأسبوع", "مؤثر", "هوفستد", "الدكتورة", "البروفيسور", "عرض تقديمي",
 ];
 
 function tokenSet(text: string): Set<string> {
@@ -169,9 +174,10 @@ export function classifyIntent(message: string): Intent {
 
   if (isCourseRelated(trimmed)) return "retrieve";
 
-  const tokens = tokenSet(lower);
-  if (tokens.size >= 4) return "retrieve";
-  if (tokens.size >= 2) return "offtopic_redirect";
+  // Arabic words are not a-z tokens; count them so an Arabic question is never mistaken for small talk.
+  const words = tokenSet(lower).size + (lower.match(/[\u0600-\u06FF]+/g)?.length ?? 0);
+  if (words >= 4) return "retrieve";
+  if (words >= 2) return "offtopic_redirect";
   return "social";
 }
 

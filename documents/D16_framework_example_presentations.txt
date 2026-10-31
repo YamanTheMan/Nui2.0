@@ -1,0 +1,84 @@
+FRAMEWORK EXAMPLE PRESENTATIONS AND FURTHER READING — IS 67-382 Digital Transformation, Strategy and Management
+Provenance: example presentations by past students and the "National Culture" further-reading slides shared on Canvas for the cultural framework (Assignment 1) and IT adoption framework (Assignment 2) assignments.
+These examples show format and approach. They are not model answers, they predate the Fall 2026 requirements, and their quality varies. Students must not copy them. For Assignment 1, Fall 2026 requires the original publication of the assigned theory and at least 10 peer-reviewed articles applying it in the chosen country; the examples below use fewer sources and some web sources.
+
+---
+TOE FRAMEWORK — TECHNOLOGY-ORGANIZATION-ENVIRONMENT (EXAMPLE PRESENTATION)
+
+Origin: Tornatzky and Fleischer (1990). TOE explains technology adoption at the organisational level through three contexts:
+- Technological context: characteristics of the technology and the firm's existing technology, for example relative advantage, complexity, compatibility, IT infrastructure, IT maturity, perceived benefits and costs, security and reliability.
+- Organisational context: characteristics of the firm, for example top management support, firm size, IT human resources, absorptive capacity, learning orientation, ownership type, information intensity.
+- Environmental context: the setting the firm operates in, for example competitive pressure, trading partner influence, partnership quality, critical mass, regulation and compliance, environmental uncertainty, inter-organisational dependence.
+
+The example presentation applied TOE to five peer-reviewed cases: hotels adopting mobile reservation systems (Wang, Li, Li and Zhang, 2016, Tourism Management); factors influencing e-business IT capabilities (Yeh, Lee and Pai, 2015, Information Development); e-business assimilation in China's international trade firms (Li, Lai and Wang, 2010, Journal of Global Information Management); cloud computing adoption drivers and barriers (Nkhoma, Dang and De Souza-Daw, 2013); and electronic supply chain management adoption (Lin, 2014, Technological Forecasting and Social Change).
+
+Takeaways from the example: technological fit alone is not enough, since a technology can suit an organisation technically yet fail for organisational or environmental reasons, or the reverse. TOE can explain why an existing technology succeeded, not only whether to adopt. There is no fixed list of TOE factors: the factors vary by technology. For example, trading partner influence matters for supply chain systems that several organisations must co-adopt, but not for most other technologies. TOE works at the organisational level, unlike TAM and UTAUT, which explain individual users.
+
+---
+LEWIS MODEL OF CROSS-CULTURAL COMMUNICATION (EXAMPLE PRESENTATION)
+
+The Lewis Model (Richard D. Lewis) groups national cultures by communication and behaviour into three types. The course file shows the model only as a diagram, so this summary of the three types is a general description:
+- Linear-active: task-oriented, plan ahead, do one thing at a time, value facts and schedules.
+- Multi-active: people-oriented, talkative and expressive, do several things at once, rely on relationships and direct personal contact.
+- Reactive: listen first, value harmony, courtesy and respect, avoid confrontation.
+
+The example applied the model to the success of LIVES (Learning through Interactive Voice Educational System) in Afghanistan. LIVES uses optimised computers and open-source software to deliver learning content over the phone, in each caller's preferred language. Evidence came from Shahnaz et al. (2014, Creative Education) on parent education through mobile technology, and Dupree (2002, Third World Quarterly) on Afghan cultural identity. The analysis linked adoption to a multi-active, dialogue-oriented culture (the product spread by word of mouth), a collectivist society (participants invited neighbours, friends and relatives), the high importance of family (parents integrated it into parenting), and national pride (LIVES became part of re-educating the country).
+
+---
+GLOBE FRAMEWORK — JAPAN (EXAMPLE PRESENTATION)
+
+GLOBE (Global Leadership and Organizational Behavior Effectiveness; House et al., 2004) identifies nine cultural dimensions: uncertainty avoidance, power distance, institutional collectivism, in-group collectivism, gender egalitarianism, assertiveness, future orientation, performance orientation and humane orientation. Most build on Hofstede's work; performance orientation and humane orientation are unique to GLOBE.
+
+Definitions used (House et al., 2004):
+- Uncertainty avoidance: how far a society relies on social norms, rules and procedures to reduce the unpredictability of future events.
+- Power distance: how far members expect and agree that power should be unequally shared.
+- Institutional collectivism: how far institutional practices encourage and reward collective distribution of resources and collective action.
+- In-group collectivism: how far individuals express pride, loyalty and cohesiveness in their organisations or families.
+- Gender egalitarianism: how far a collective minimises gender inequality.
+- Assertiveness: how far individuals are assertive, confrontational and aggressive in relationships.
+- Future orientation: how far a collectivity encourages and rewards future-oriented behaviour such as planning and delaying gratification.
+- Performance orientation: how far a community encourages and rewards innovation, high standards, excellence and performance improvement.
+- Humane orientation: how far a society rewards being fair, altruistic, friendly, generous, caring and kind.
+
+The example described Japan as high in uncertainty avoidance (careful feasibility studies and risk analysis before projects, partly attributed to frequent natural disasters), moderate in power distance (decisions confirmed layer by layer, but a meritocratic education system), high in institutional and in-group collectivism (group harmony, loyalty to companies), low-to-moderate in gender egalitarianism, low in performance orientation but high in future orientation. Its case mapped the J-pop idol group AKB48 onto GLOBE dimensions, for example formal policies (uncertainty avoidance), the producer as boss (power distance) and the team structure (institutional collectivism). Note: this example is a cultural analysis, but it does not link the dimensions to a technology adoption, which the course assignment requires.
+
+---
+SCHWARTZ CULTURAL VALUE ORIENTATIONS — ERP ADOPTION IN GERMANY (EXAMPLE PRESENTATION)
+
+Schwartz has two related theories. D08 covers the individual-level theory of 10 basic human values. This example used Schwartz's culture-level value orientations: seven values in three bipolar dimensions.
+- Mastery versus harmony: how far people seek to change the natural and social world to advance personal or group interests (mastery) or accept and preserve it (harmony).
+- Hierarchy versus egalitarianism: how far unequal roles are accepted and enforced (hierarchy) or people are treated as moral equals with shared interests (egalitarianism).
+- Conservatism (also called embeddedness) versus autonomy: how far people find meaning through a group that shares their way of life (conservatism) or through their own uniqueness. Autonomy splits into intellectual autonomy (independently pursuing ideas) and affective autonomy (independently pursuing positive experiences).
+
+The example drew on research on national culture and European ERP adoption, whose hypotheses were that ERP adoption is lower where conservatism is higher and higher where affective and intellectual autonomy are higher. Germany scores low on conservatism and high on both forms of autonomy, consistent with high ERP adoption.
+
+---
+TAM EXAMPLE PRESENTATION — TECHNOLOGY ACCEPTANCE MODEL CASES
+
+TAM (Davis, 1989; Davis, Bagozzi and Warshaw, 1989) extends the Theory of Reasoned Action. Perceived usefulness and perceived ease of use shape attitude toward using, which shapes behavioural intention, which drives actual use. TAM2 adds social influence processes (subjective norm, voluntariness, image); TAM3 (Venkatesh and Bala, 2008) adds the determinants of perceived usefulness and perceived ease of use.
+
+Example cases: YouTube as a learning resource in higher education, where the authors developed and validated new scales because TAM alone lacked a measure for this context (Chintalapati and Daruri, 2017, Telematics and Informatics); and impulsiveness in online purchasing, where TAM was augmented with impulsiveness and subjective norms (Zhang, Prybutok and Koh, 2006, Information Resources Management Journal). A pattern worth noticing: most studies extend TAM with context-specific constructs.
+
+---
+UTAUT EXAMPLE PRESENTATION — UNIFIED THEORY OF ACCEPTANCE AND USE OF TECHNOLOGY CASES
+
+UTAUT (Venkatesh et al., 2003) unifies eight earlier models: the theory of reasoned action, TAM, the motivational model, the theory of planned behaviour, combined TAM and TPB, the model of PC utilisation, innovation diffusion theory and social cognitive theory. Performance expectancy, effort expectancy and social influence predict behavioural intention; facilitating conditions and behavioural intention predict use. Gender, age, experience and voluntariness of use moderate these effects.
+
+Example cases: high school students' educational use of YouTube (2016), where performance expectancy was the strongest predictor of intention, social influence was also significant, and effort expectancy and facilitating conditions were not significant; e-book acceptance (2018), where behavioural intention strongly predicted use but several constructs were not significant; and internet banking usage in Lebanon (2016). A pattern worth noticing: which constructs are significant changes with the technology, the users and the country, which is why a cultural lens matters.
+
+---
+NATIONAL CULTURE FURTHER READING AND EXAMPLE CASE STUDIES
+
+Further reading links shared for the cultural framework assignment:
+- Hofstede country comparison tool: https://www.hofstede-insights.com/product/compare-countries/
+- Hofstede dimensions overview: https://www.cleverism.com/understanding-cultures-people-hofstede-dimensions/
+- Hall's high-context and low-context cultures: http://cascadebusnews.com/business-tips/networking/154-high-context-a-low-context-cultures
+- Schwartz: http://latest-schwartz.wikidot.com/
+
+Example case studies linking culture and information systems:
+- Cultural Dimensions and CRM Systems: A Cross-Cultural Case Study
+- Measuring National Culture by Analyzing Business Processes: A Case Study in Germany and India (WI 2017)
+- Understanding National Culture Effects on User Behavior in Integrative IS Implementations (Procedia Computer Science)
+- Does Culture Matter? A Case Study on Online Retailing Stores across Three Asian Countries (PACIS 2014)
+
+These links are starting points. Assignment 1 still requires the original theory publication and peer-reviewed articles found through the university library and AIS resources.

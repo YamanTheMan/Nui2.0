@@ -13,6 +13,15 @@ export type CourseMaterial = {
 
 export const COURSE_MATERIALS: readonly CourseMaterial[] = [
   {
+    source: "D14_fall_2026_deadlines_and_contacts.txt",
+    title: "Fall 2026 deadlines & contacts",
+    category: "Class updates",
+    date: "2026-10-31",
+    description: "Every due date, class times, and office hours for Prof Nui, the TA, and course assistants.",
+    icon: "target",
+    prompt: "What are the remaining deadlines this semester, and who can I see in office hours?",
+  },
+  {
     source: "D13_2026_09_16_class_update.txt",
     title: "September 16 class update",
     category: "Class updates",
@@ -114,6 +123,22 @@ export const COURSE_MATERIALS: readonly CourseMaterial[] = [
     icon: "spark",
     prompt:
       "Help me understand five factors influencing virtual influencer adoption.",
+  },
+  {
+    source: "D15_fall_2026_cases_and_guest_talks.txt",
+    title: "Cases & guest talks",
+    category: "Frameworks & research",
+    description: "AI vs. human, iX Consulting's agentic proposals, and talks from Accenture and Fragomen.",
+    icon: "spark",
+    prompt: "What did the AI vs. Human case session cover, and how does it connect to Assignment 2?",
+  },
+  {
+    source: "D16_framework_example_presentations.txt",
+    title: "Framework examples",
+    category: "Frameworks & research",
+    description: "Past example presentations on TOE, Lewis, GLOBE, Schwartz, TAM, and UTAUT.",
+    icon: "book",
+    prompt: "Explain the TOE framework and how the example presentation applied it.",
   },
 ] satisfies readonly CourseMaterial[];
 

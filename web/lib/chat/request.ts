@@ -1,4 +1,4 @@
-import { EMPTY_PROFILE, type StudentProfile } from "../student/profile";
+import { EMPTY_PROFILE, normaliseGender, type StudentProfile } from "../student/profile";
 import type { ChatTurn } from "./prompt";
 
 export class InvalidRequest extends Error {
@@ -44,7 +44,7 @@ export function normaliseProfile(input: unknown): StudentProfile {
   const field = (value: unknown) => typeof value === "string"
     ? value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120)
     : "";
-  return { name: field(raw.name), major: field(raw.major), year: field(raw.year) };
+  return { name: field(raw.name), major: field(raw.major), year: field(raw.year), gender: normaliseGender(raw.gender) };
 }
 
 export function parseChatRequest(payload: unknown): { turns: ChatTurn[]; profile: StudentProfile } {

@@ -6,7 +6,9 @@ import { ExpiringAnswerCache, answerCacheKey } from "../../lib/chat/answer-cache
 import { detectEmailNeed, isEmailReason } from "../../lib/chat/email.ts";
 import { InvalidRequest, normaliseProfile, parseChatRequest, readJsonRequest } from "../../lib/chat/request.ts";
 import { providerFailure, streamAnswer } from "../../lib/chat/stream-answer.ts";
-import { CHAT_MODEL, FAST_MODEL, type GenerationPlan } from "../../lib/chat/prompt.ts";
+import { buildGenerationPlan, CHAT_MODEL, FAST_MODEL, type GenerationPlan } from "../../lib/chat/prompt.ts";
+import { qatarDateKey, todayBlock } from "../../lib/chat/today.ts";
+import { EMPTY_PROFILE } from "../../lib/student/profile.ts";
 
 const plan: GenerationPlan = {
   system: "Answer only from the notes.", model: CHAT_MODEL, temperature: 0,
@@ -42,7 +44,9 @@ test("only text is forwarded and profiles are bounded", () => {
   assert.equal(parsed.profile.name, "Sara Ali");
   assert.equal(parsed.profile.major.length, 120);
   assert.equal(parsed.profile.year, "");
-  assert.deepEqual(normaliseProfile([]), { name: "", major: "", year: "" });
+  assert.deepEqual(normaliseProfile([]), { name: "", major: "", year: "", gender: "" });
+  assert.equal(normaliseProfile({ gender: "female" }).gender, "female");
+  assert.equal(normaliseProfile({ gender: "Female " }).gender, "");
 });
 
 test("JSON input is bounded with and without Content-Length", async () => {
@@ -57,6 +61,31 @@ test("cache keys preserve distinct grades, symbols and languages", () => {
     assert.notEqual(answerCacheKey(left, "retrieve"), answerCacheKey(right, "retrieve"));
   }
   assert.equal(answerCacheKey("What   is late? ", "retrieve"), answerCacheKey("What is late?", "retrieve"));
+});
+
+test("cached answers never outlive the Qatar calendar day", () => {
+  // 20:59 UTC is 23:59 in Doha; 21:00 UTC is already the next day there.
+  const late = new Date("2026-11-22T20:59:00Z");
+  const sameDay = new Date("2026-11-22T05:00:00Z");
+  const nextDay = new Date("2026-11-22T21:00:00Z");
+  assert.equal(answerCacheKey("When is the final project due?", "retrieve", late), answerCacheKey("When is the final project due?", "retrieve", sameDay));
+  assert.notEqual(answerCacheKey("When is the final project due?", "retrieve", late), answerCacheKey("When is the final project due?", "retrieve", nextDay));
+  assert.equal(qatarDateKey(nextDay), "2026-11-23");
+  assert.match(todayBlock(late), /Sunday, 22 November 2026 \(Qatar time\)/);
+});
+
+test("every answer knows today's date and only Arabic replies use the form of address", () => {
+  const question = [{ role: "user" as const, content: "When is the final project due?" }];
+  assert.match(buildGenerationPlan(question, EMPTY_PROFILE).system, /TODAY'S DATE: /);
+  const followUp = [
+    { role: "user" as const, content: "Explain assignment 1" },
+    { role: "assistant" as const, content: "Sure." },
+    { role: "user" as const, content: "What about the deadline?" },
+  ];
+  const female = buildGenerationPlan(followUp, { ...EMPTY_PROFILE, gender: "female" }).system;
+  assert.ok(female.includes("Arabic form of address: feminine"));
+  assert.ok(!buildGenerationPlan(followUp, EMPTY_PROFILE).system.includes("Arabic form of address:"));
+  assert.ok(buildGenerationPlan(followUp, EMPTY_PROFILE).system.includes("never assume a\ngender"));
 });
 
 test("local cache honors expiry and evicts the least recently used answer", () => {

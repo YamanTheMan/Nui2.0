@@ -10,6 +10,8 @@ const chunks = rawIndex.chunks as Chunk[];
 const OVERVIEW = "D01_course_overview.txt";
 const ASSIGNMENTS = "D02_assignments.txt";
 const SEPTEMBER_UPDATE = "D13_2026_09_16_class_update.txt";
+const FALL_2026 = "D14_fall_2026_deadlines_and_contacts.txt";
+const CASES = "D15_fall_2026_cases_and_guest_talks.txt";
 
 function sections(source: string, prefix: string): Chunk[] {
   return chunks.filter((chunk) => chunk.source === source && chunk.section.startsWith(prefix));
@@ -31,10 +33,10 @@ export const ATTENDANCE_POLICY = fact(OVERVIEW, "ATTENDANCE POLICY");
 export const WORD_COUNT_POLICY = fact(OVERVIEW, "WORD COUNT POLICY");
 
 const ASSIGNMENT_PATTERNS: Array<[RegExp, string]> = [
-  [/\b(?:assignment\s*(?:1|one)|first\s+assignment|a1|cultural\s+framework\s+assignment)\b/i, "ASSIGNMENT 1:"],
-  [/\b(?:assignment\s*(?:2|two)|second\s+assignment|a2|it\s+adoption\s+framework\s+assignment)\b/i, "ASSIGNMENT 2:"],
-  [/\bfinal\s+(?:project|report)|3,?000\s*words?|literature\s+review\s+project/i, "FINAL PROJECT"],
-  [/self[\s-]?reflect|reflective\s+essay|500[\s-]?word/i, "SELF-REFLECTIVE ESSAY"],
+  [/\b(?:assignment\s*(?:1|one)|first\s+assignment|a1|cultural\s+framework\s+assignment)\b|الواجب\s+الأول|المهمة\s+الأولى/i, "ASSIGNMENT 1:"],
+  [/\b(?:assignment\s*(?:2|two)|second\s+assignment|a2|it\s+adoption\s+framework\s+assignment)\b|الواجب\s+الثاني|المهمة\s+الثانية/i, "ASSIGNMENT 2:"],
+  [/\bfinal\s+(?:project|report)|3,?000\s*words?|literature\s+review\s+project|المشروع\s+النهائي/i, "FINAL PROJECT"],
+  [/self[\s-]?reflect|reflective\s+essay|500[\s-]?word|المقال\s+التأملي|مقال\s+تأملي/i, "SELF-REFLECTIVE ESSAY"],
 ];
 
 const POLICY_PATTERNS: Array<[RegExp, string, string]> = [
@@ -50,6 +52,27 @@ const POLICY_PATTERNS: Array<[RegExp, string, string]> = [
   [/schedule|week\s*\d|syllabus/i, OVERVIEW, "WEEKLY SCHEDULE"],
   [/class\s+(?:hours|time)|when.*class|instructor|professor.*email/i, OVERVIEW, "COURSE OVERVIEW"],
   [/office\s*hours?|ai[ -]?clone|clone\s+(?:session|appointment)|feedback\s+form|tuesdays?|11[:.]45|12[:.]05|\bix\s*lab\b/i, SEPTEMBER_UPDATE, "AI-CLONE OFFICE HOURS:"],
+  // Fall 2026 syllabus and Canvas pages. Arabic patterns cover typed Arabic questions,
+  // which the English BM25 index cannot match on its own.
+  [/deadline|\bdue\b(?!\s+to\b)|when\s+(?:is|are|do|should|must).{0,40}(?:submit|upload|hand|present)|submission\s+date|presentation\s+(?:date|day)|موعد|مواعيد|تسليم|متى/i, FALL_2026, "DUE DATES"],
+  [/schedule|week\s*\d|this\s+week|next\s+week|syllabus|الجدول|الأسبوع|المنهج/i, FALL_2026, "FALL 2026 WEEK-BY-WEEK"],
+  [/class\s+(?:hours|time)|when.*class|instructor|professor.*(?:email|office|phone)|prof(?:essor)?\s+nui.*(?:office|phone|room|zoom|appointment|meet)|room\s*3192|موعد\s+المحاضرة|المحاضرات|مكتب/i, FALL_2026, "CLASS TIMES"],
+  [/office\s*hours?|\bta\b|teaching\s+assistant|course\s+assistants?|\bdeema\b|\blaiba\b|mazeeda.*(?:email|office|room|phone|contact|hours)|consultation|appointment|who\s+(?:can|do|should)\s+i\s+(?:ask|contact|email)|contact|kiosk|ساعات\s+المكتب|المساعد|مساعدة\s+التدريس|للتواصل/i, FALL_2026, "OFFICE HOURS"],
+  [/peer\s+(?:evaluation|review|assessment)|team\s*mates?|group\s+(?:work|member|participation)|free[\s-]?rid|تقييم\s+الزملاء/i, FALL_2026, "PEER EVALUATION"],
+  [/disabilit|accommodat|wellness|wellbeing|well-being|counsel|mental\s+health|anxiety|depress|stressed|\bcaps(?:-?q)?\b|إعاقة|الصحة\s+النفسية|ضغط/i, FALL_2026, "STUDENT SUPPORT"],
+  [/prerequisite|prior\s+knowledge|textbook|grading\s+(?:scale|policy)|letter\s+grade|curve/i, FALL_2026, "SYLLABUS DETAILS"],
+  // Fall 2026 case sessions and guest talks.
+  // Named cases only: a general influencer question belongs to the scholarly notes in D12.
+  [/ai\s+vs\.?\s+human|case\s+session|lil\s+miquela|aitana|xania|velvet\s+sundown|unitree|nene\s+royal|got\s+talent|\bagt\b/i, CASES, "AI VS HUMAN CASE SESSION"],
+  [/lil\s+miquela|aitana|xania|velvet\s+sundown|ai\s+(?:music|artists?)/i, CASES, "CASE 3"],
+  [/unitree|nene\s+royal|got\s+talent|\bagt\b|robots?\s+(?:vs|versus|dance)/i, CASES, "CASE 2"],
+  [/\bix\s+consulting|agentic|rfp|request\s+for\s+proposal|consulting\s+proposal|lilli|jagged/i, CASES, "IX CONSULTING CASE"],
+  [/\bjamil\b|accenture|hukoomi|\buat\b|user\s+acceptance\s+testing/i, CASES, "GUEST TALK — JAMIL"],
+  [/fragomen|\bwitr\b|immigration\s+trends|myka/i, CASES, "GUEST TALK — FRAGOMEN"],
+  // Typed Arabic versions of the core policy questions.
+  [/تأخير|متأخر|خصم|عقوبة/i, OVERVIEW, "LATE PENALTY"],
+  [/حضور|غياب|الغياب|الرقص|رقصة/i, OVERVIEW, "ATTENDANCE POLICY"],
+  [/الدرجات|الدرجة|نسبة|التقييم|العلامات/i, OVERVIEW, "ASSESSMENTS AND GRADING"],
 ];
 
 export function getFactChunksForQuery(query: string): Chunk[] {
@@ -97,6 +120,9 @@ export function getFactChunksForQuery(query: string): Chunk[] {
     add(OVERVIEW, "SELF-REFLECTIVE ESSAY");
   }
   for (const [pattern, source, prefix] of POLICY_PATTERNS) {
+    // A named assignment's brief carries its own dates; the all-assignments
+    // table would put other assignments' dates beside it.
+    if (source === FALL_2026 && prefix === "DUE DATES" && specificAssignments.length > 0) continue;
     if (pattern.test(query)) add(source, prefix);
   }
   return [...matched.values()];

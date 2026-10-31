@@ -1,0 +1,103 @@
+FALL 2026 CLASS CASES AND GUEST TALKS — IS 67-382 Digital Transformation, Strategy and Management
+Provenance: Fall 2026 class materials on Canvas: the "AI vs. Human" case session deck, the iX Consulting case study, and the guest decks from Jamil (Accenture) and Fragomen.
+These are discussion cases. Their discussion questions have no single official answer; students are expected to argue a position using course frameworks and evidence.
+
+---
+AI VS HUMAN CASE SESSION — WHO DO WE TRUST, FOLLOW AND VOTE FOR
+
+Prof Nui's Fall 2026 case session "AI vs. Human: Who do we trust, follow and vote for?" sets up Step 3 of the IT Adoption Framework assignment (Assignment 2): analysing the adoption of AI influencers. The big idea is that AI is moving from a behind-the-scenes tool (recommendations, search, spam filters) to a visible participant in roles that used to belong only to people: teacher, performer, influencer. The adoption question is when people accept AI in a human role and when they still choose a human, which is exactly what IT adoption frameworks such as TAM, UTAUT and Diffusion of Innovations help explain.
+
+Key terms used in the session:
+- AI clone (digital twin): an AI system modelled on a specific real person's knowledge, voice and sometimes appearance.
+- Social media AI influencer: a computer-generated persona that posts content and builds a following. A human team runs it. "Virtual influencer" is the older term (CGI characters such as Lil Miquela); "AI influencer" increasingly means personas whose images, video or voice are produced with generative AI.
+- AI-generated artist: a music act whose vocals and/or songs are produced mainly with generative AI, usually with a human creator behind it.
+- Humanoid robot: a physical robot with a human-like body that can be programmed to move, for example to dance.
+- Technology adoption: how people decide to accept, start using and keep using a new technology.
+
+Questions to carry through all three cases: What exactly is the AI doing? Who decides whether to accept it (users, audiences, judges, brands)? What would make you choose the AI, and what would make you choose the human?
+
+---
+CASE 1 — NUI 2.0, AN AI CLONE OF THE PROFESSOR
+
+Nui 2.0 is an AI version of Dr. Nui built for this course. Students can ask it about course concepts, the cultural and IT adoption frameworks, assignments, deadlines and expectations, and course policies. It offers three levels of human-likeness: text chat (answers show the course excerpts they were based on), a course library students can read directly, and a live conversation with a real-time video avatar speaking in her cloned voice.
+
+How it works: the student asks; the system searches the course materials for the most relevant excerpts (retrieval-augmented generation, RAG); a language model writes the answer from those excerpts; the answer is shown with its sources; in live sessions a cloned voice and a video avatar deliver it. Grounding answers in course documents makes made-up answers ("hallucinations") less likely but cannot rule them out. The clone only knows what it has been given: its knowledge, voice and face all come from the real professor and the course team.
+
+Not the only AI professor: at the University of Nottingham, students spent eight months cloning the face and voice of Professor Elvira Perez Vallejos to test the ethical limits of the technology (The Tab, 2026). She saw 24/7 access and translation as benefits but warned that losing human contact in learning is a real risk.
+
+AI clone versus human professor, as starting points for debate: availability (24/7 versus office hours and email), consistency (the same policy answer every time versus judgment that adapts to each case), personal connection (simulated through voice and face versus genuine empathy and mentoring), knowledge (limited to the course materials versus broad expertise), accountability (unclear who answers for a wrong reply versus the professor being responsible).
+
+Discussion questions: Would you ask Nui 2.0 before emailing Dr. Nui? For which questions would you trust the clone, and for which would you insist on the real professor? Does a realistic face and familiar voice make you trust the answers more or less? What would make you stop using it after one try? Might students from different cultural backgrounds react differently to an AI version of their professor?
+
+---
+CASE 2 — ROBOTS VERSUS A HUMAN ON AMERICA'S GOT TALENT 2026
+
+America's Got Talent season 21 aired on NBC from June 2 to September 23, 2026, with judges Howie Mandel, Mel B, Sofía Vergara and Simon Cowell and host Terry Crews. Judges vote acts through the auditions, each judge can press one Golden Buzzer to send an act straight ahead, and the final winner is decided by the viewing public's votes.
+
+The AI act: Unitree, a Chinese robotics company based in Hangzhou, with dancer and Unitree engineer Wu Yufei ("Flying Bug") performing with eight Unitree G1 humanoid robots. Humans design the choreography and program the movements; later rounds mixed robots with human dancers, so it was human-robot collaboration, not robots alone. The audition recap passed one million YouTube views in 24 hours. Sofía Vergara gave the act her Golden Buzzer in the quarterfinals. Unitree reached the Top 10 final but not the Top 5 in the public vote.
+
+The human act: Nene Royal, a 16-year-old singer and guitarist from Phuket, Thailand, who started guitar at age seven. Mel B gave her the Golden Buzzer for "Black Hole Sun" in the quarterfinals. She won the public vote and the one-million-dollar prize in the September 22–23 final, the first Thai winner of AGT, ahead of magician Geno Ploeger (second) and Hundred Fingers (third). The Thai government named her a tourism ambassador.
+
+The lesson: the judges rewarded both acts, but the public chose the human. Adoption is shaped by culture, politics and identity: the US studio audience gave the robots a standing ovation while some US lawmakers moved to restrict Chinese-made robots, and Thai fans rallied behind Nene Royal as a national representative. One talent show result is not evidence that people reject robots in general; song choice, personal story and national fan bases all affect a vote.
+
+Discussion questions: Why might viewers vote differently from judges? Was Unitree's act "AI versus human" or "AI with humans"? Would you buy a ticket to a robot concert? Would the result be the same in Qatar, China or Thailand? Is a performance less impressive when a machine does it perfectly?
+
+---
+CASE 3 — AI INFLUENCERS AND AI MUSIC
+
+An AI influencer is a computer-generated character with a name, look and personality who posts on social media, builds a following and earns money from it. Behind every one is a human team. Compared with human influencers they are fully controlled by their owners, always available, vary in how openly they disclose being AI, and range from obviously digital 3D characters to photorealistic images.
+
+How one is made and run: design the persona (a "character bible" of name, look, age, personality, backstory and values); generate content with AI image, video, voice and music tools; a human team writes captions, plans posts, follows trends and replies to fans; build an audience with regular posting and storylines; make money through brand partnerships, sponsored posts, streams, record deals and merchandise.
+
+Examples:
+- Lil Miquela: a virtual influencer since 2016, created by Los Angeles start-up Brud, presented as a teenage musician and model with millions of Instagram followers. Worked with Prada, Calvin Klein and Samsung; faced backlash over a 2019 Calvin Klein advert and scripted storylines.
+- Aitana López: an AI model and influencer created by Rubén Cruz at The Clueless agency in Barcelona, built because real models caused disruptions to client campaigns. Reported to earn up to about 10,000 euros in some months.
+- Xania Monet (openly AI): an AI R&B singer created by Telisha "Nikki" Jones, who writes the lyrics; vocals and music are generated with Suno. Signed a reported 3 million dollar deal with Hallwood Media in September 2025 and was the first AI-powered artist to debut on a Billboard airplay chart.
+- The Velvet Sundown (hidden until exposed): appeared on Spotify as an indie rock band and passed one million monthly listeners by July 2025. After listeners and journalists suspected AI, the project first denied it, then admitted it, now calling itself "a synthetic music project guided by human creative direction".
+
+Discussion questions: Would you follow an AI influencer if clearly labelled? Does it matter whether the AI is open (Xania Monet) or hidden (The Velvet Sundown)? Who deserves the credit and money when an AI artist succeeds? Why might a brand choose an AI influencer, and why might it avoid one? Team activity: design an AI influencer for a Qatar brand (a tourism campaign, a café chain, an electronics retailer or a university open day) using a persona card: name and look, personality and values, platform, target audience, AI disclosure and business model.
+
+---
+AI INFLUENCERS AND ASSIGNMENT 2 STEP 3 — HOW THE CASES CONNECT
+
+Across the three cases, compare what the AI does, who decides whether to accept it, and which humans stand behind it. Step 3 of Assignment 2 asks students to use their IT adoption framework to identify and discuss five factors that influence why people adopt or follow AI influencers, answering "What factors influence the adoption of AI influencers?" and "Why do people follow AI influencers?" The cases are a starting point only: strong answers connect each factor to the framework's constructs and support it with peer-reviewed research. The Fall 2026 deck says "AI influencers"; the older assignment brief says "virtual influencers"; both refer to computer-generated personas run by human teams.
+
+---
+IX CONSULTING CASE — FROM MANUAL TO AGENTIC: RETHINKING THE CONSULTING PROPOSAL
+
+Background: consulting engagements begin with a request for proposal (RFP) that sets out the project, problem, scope, timeline, budget and evaluation criteria. Clients send the same RFP to several firms at once, so the proposal stage is where competition between firms is decided. iX Consulting, a venture describing its platform as "agentic-first, human-approved", set out to automate that stage.
+
+The traditional process was manual: a partner reads the RFP; a pipeline meeting decides whether to bid based on fit, winnability, margin and risk; a team is assembled, often by availability and personal networks; analysts search shared drives for prior work; drafts are edited by successively senior reviewers until a partner signs. A serious response took two to three days. Proposal work is unbilled, so pursuit was expensive, and that expense made the proposal a costly signal of senior commitment.
+
+Pressures by 2026: a Source Global survey found only one in three adviser-supervised technology transformation projects was wholly successful, and client satisfaction with the Big Four generalists fell from 80% to 55% in a year. Clients took more work in-house. Incumbents automated internally: McKinsey's assistant Lilli, built on over 100,000 documents, was used monthly by over three-quarters of its roughly 43,000 employees by mid-2025 and drafts client proposals; by late 2025 about a quarter of McKinsey's fees were tied to outcomes rather than hours.
+
+How iX Consulting works, in three verticals that each end with a human approval gate: (1) screening, where an advocate agent and a critic agent debate the bid over three rounds (five if complex) and a judge agent adjudicates and can be questioned in plain language; (2) staffing, which proposes an optimal team from consultants' CVs and project histories, shown as a "chemistry graph"; (3) drafting, where four expert agents write, an editor agent imposes structure, and a three-round quality debate stress-tests the result before human sign-off. The venture claims turnaround in hours, roughly twentyfold faster.
+
+Issues raised: in a field experiment with 758 BCG consultants, those using GPT-4 completed 12.2% more tasks, 25.1% faster, at over 40% higher quality on tasks within the AI's competence, but were 19 percentage points more likely to be wrong on a task outside it: the "jagged technological frontier". A human gate only works if reviewers genuinely scrutinise fluent, fast AI output. Cheap pursuit may weaken the proposal as a costly signal; junior analysts lose the apprenticeship of drafting and being corrected; and staffing by algorithm can reproduce patterns in the historical record.
+
+Discussion questions: Summarise how a traditional consulting project runs from RFP to proposal. Will multi-agent systems like iX Consulting replace current consulting practice? Will there be fewer or more human consultants, and what kind will remain? What kind of human should be in the loop, and at which points?
+
+---
+GUEST TALK — JAMIL (ACCENTURE): FROM CMU TO AI TRANSFORMATION
+
+Jamil, a CMU-Q Information Systems (Data Science) graduate now working at Accenture on AI and digital transformation for the public sector in Qatar, gave a peer-to-peer talk on what AI consulting looks like after university.
+
+Main messages:
+- At CMU you learn how technology works; in consulting you learn how technology gets implemented inside real organisations. The AI model is often just one piece of the transformation; most of the work is the business problem, the client, data readiness, stakeholder alignment, architecture, security and governance, integration, testing, adoption and change management.
+- AI transformation is a chain: business problem, use case, data, AI and technology, integration, testing and governance, adoption, business value. A great model on bad data, with no integration or adoption, delivers no value.
+- A consultant translates in both directions between the business and engineering: understand requirements, turn them into technical requirements, coordinate teams, test and find gaps, explain technical issues in business language.
+- Case: an AI chatbot citizens can trust for government digital services (inspired by platforms like Hukoomi). "Connect an LLM" is the easy 10%. The data problem comes before the AI problem: content lives in SharePoint, websites, PDFs, Word, PowerPoint and Excel and keeps changing, so the work is extraction, change detection, handling deleted and new documents, indexing and validation. An enterprise chatbot answers from trusted retrieved content (RAG, vector and keyword search, Arabic and English), not from memory.
+- Turning "we want an AI chatbot" into requirements means asking: who will use it, what should and should not it answer, what data can it access and where does it live, how often does it change, how is success measured, who approves responses, what happens when it is wrong, what security constraints exist.
+- User acceptance testing (UAT) is the loop of test, find issue, diagnose, assign, fix, retest, accept, deploy. A demo proves something can work; UAT proves it works for the client.
+- Lessons for CMU students: see how systems connect, have enough technical depth to earn trust, explain technology simply, get comfortable with ambiguity, respect data quality, and ask "why?" before "how?". Closing line: learn the technology, understand the problem, connect the two.
+
+---
+GUEST TALK — FRAGOMEN FORWARD: DIGITAL TRANSFORMATION AT AN IMMIGRATION FIRM
+
+Fragomen is the largest global immigration advisory firm: established 1951, 60+ offices, support in 170+ countries, 6,000+ personnel, more than 6,500 corporate clients including 100+ in Qatar and over half of the Fortune 100, and deep knowledge of Qatar immigration and labour migration policy.
+
+Three connected initiatives modernise how it works: Fragomen Forward (its digital transformation programme, making processes quicker and client experience smoother), an AI Centre of Excellence building AI agents for information retrieval, visa-outcome trend prediction and repetitive workflows, and citizen developers (staff building their own Copilot agents to automate everyday tasks).
+
+Tools already live: MyKA, a RAG chatbot on Fragomen's legal knowledge base for rapid immigration answers; FTR, which tracks inboxes, meetings and tasks in Microsoft data and sends proactive Teams reminders to help meet client service levels; and AI form population, which pulls case details from the case management platform and prefills government forms.
+
+The process they want to transform: the Worldwide Immigration Trends Report (WITR), the flagship publication on mobility trends across 160+ countries (about 150,000 page views and 15,000 downloads a year). The goal is to move from a static report to a personalised, interactive experience that answers each client's "What is in there for me?", augmented with AI and software features, with metrics that show how well AI delivers tailored insights.

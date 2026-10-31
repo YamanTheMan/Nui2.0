@@ -1,10 +1,21 @@
+/**
+ * Arabic addresses men and women with different word forms. This is only used to
+ * speak Arabic correctly; English never reads it. Empty means "ask the student".
+ */
+export type StudentGender = "" | "female" | "male";
+
 export type StudentProfile = {
   name: string;
   major: string;
   year: string;
+  gender: StudentGender;
 };
 
-export const EMPTY_PROFILE: StudentProfile = { name: "", major: "", year: "" };
+export const EMPTY_PROFILE: StudentProfile = { name: "", major: "", year: "", gender: "" };
+
+export function normaliseGender(value: unknown): StudentGender {
+  return value === "female" || value === "male" ? value : "";
+}
 
 export function firstName(fullName: string): string {
   const trimmed = fullName.trim();

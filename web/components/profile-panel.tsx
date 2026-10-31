@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import type { StudentProfile } from "@/lib/student/profile";
+import { normaliseGender, type StudentProfile } from "@/lib/student/profile";
 import Icon from "./ui-icon";
 
 export default function ProfilePanel({
@@ -25,6 +25,7 @@ export default function ProfilePanel({
           name: draft.name.trim(),
           major: draft.major.trim(),
           year: draft.year.trim(),
+          gender: draft.gender,
         });
         setSaved(true);
       }}
@@ -58,6 +59,24 @@ export default function ProfilePanel({
           />
         </label>
       ))}
+      <label>
+        In Arabic, address me as
+        <select
+          value={draft.gender}
+          onChange={(e) => {
+            setDraft({ ...draft, gender: normaliseGender(e.target.value) });
+            setSaved(false);
+          }}
+        >
+          <option value="">Not set: Nui 2.0 asks me</option>
+          <option value="female">A female student (طالبة)</option>
+          <option value="male">A male student (طالب)</option>
+        </select>
+        <span className="small muted">
+          Arabic uses different words for men and women, so this only changes
+          how Nui 2.0 speaks to you in Arabic. English is not affected.
+        </span>
+      </label>
       <button type="submit" className="button primary">
         <Icon name={saved ? "check" : "user"} size={16} />
         {saved ? "Profile saved" : "Save profile"}

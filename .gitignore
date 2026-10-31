@@ -11,3 +11,6 @@ voice-samples/
 
 # Launch videos, audio and zips (~500 MB); kept out of git
 outputs/
+
+# Raw course files from Canvas (past students' work, decks); the knowledge lives in documents/
+digtrans/

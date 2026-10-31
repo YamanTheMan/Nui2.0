@@ -97,6 +97,25 @@ const CASES: Array<{ query: string; expectIntent?: string; mustContain?: string[
   { query: "What are the balanced scorecard perspectives?", expectIntent: "retrieve", mustContain: ["Customer", "Internal Business", "Innovation and Learning", "Financial"] },
   { query: "Explain Guanxi and ERP adoption", expectIntent: "retrieve", mustContain: ["Renqing", "Ganqing", "Mianzi"] },
   { query: "Why do people follow virtual influencers?", expectIntent: "retrieve", mustContain: ["Social influence", "Hedonic motivation"] },
+  // Fall 2026 syllabus and Canvas pages (D14).
+  { query: "When is the final project due?", expectIntent: "retrieve", mustContain: ["November 23, 2026", "11:59 p.m."] },
+  { query: "When is the reflective essay due?", expectIntent: "retrieve", mustContain: ["November 30, 2026"] },
+  { query: "What is the deadline for Assignment 2?", expectIntent: "retrieve", mustContain: ["October 29, 2026"] },
+  { query: "What are all the deadlines this semester?", expectIntent: "retrieve", mustContain: ["October 1, 2026", "October 29, 2026", "November 23, 2026", "November 30, 2026"] },
+  { query: "When are the TA office hours?", expectIntent: "retrieve", mustContain: ["Mazeeda Alihassan", "1:15 p.m.", "room 3199"] },
+  { query: "Who are the course assistants and when can I see them?", expectIntent: "retrieve", mustContain: ["Deema Al-Khalifa", "Laiba Sameer"] },
+  { query: "What time is class?", expectIntent: "retrieve", mustContain: ["14:30–15:45", "16:00–17:15"] },
+  { query: "How does the peer evaluation work?", expectIntent: "retrieve", mustContain: ["Workload", "Receiving feedback"] },
+  { query: "متى موعد تسليم المشروع النهائي؟", expectIntent: "retrieve", mustContain: ["November 23, 2026"] },
+  { query: "ما هي ساعات المكتب للمساعد؟", expectIntent: "retrieve", mustContain: ["Mazeeda Alihassan"] },
+  { query: "مرحبا", expectIntent: "social" },
+  { query: "أريد أن أفهم الفرق بين النظريتين", expectIntent: "retrieve" },
+  // Fall 2026 cases, guest talks and example presentations (D15, D16).
+  { query: "What is the TOE framework?", expectIntent: "retrieve", mustContain: ["Tornatzky and Fleischer (1990)"] },
+  { query: "Explain the Lewis model", expectIntent: "retrieve", mustContain: ["Multi-active"] },
+  { query: "Who won AGT 2026, the robots or the human?", mustContain: ["Nene Royal"] },
+  { query: "How does iX Consulting automate proposals?", mustContain: ["advocate agent"] },
+  { query: "What did Jamil from Accenture talk about?", mustContain: ["user acceptance testing"] },
   { query: "How is the bathroom different from doing the ninja?", expectIntent: "retrieve", mustContain: ["Coffee Bean", "Talabat", "0.5", "bathroom is fine"] },
   { query: "What happens if I submit 25 hours late?", expectIntent: "retrieve", mustContain: ["40% penalty", "72 hours", "K-Pop"] },
   { query: "Which textbook do we use?", expectIntent: "retrieve", mustContain: ["7th Edition"] },
@@ -228,6 +247,10 @@ invariant("Assignment 1 dates and article counts never become another assignment
     assert.ok(!result.sources.some((source) => source.source === "D13_2026_09_16_class_update.txt"), `Wrong dated update attached to ${query}`);
     assert.ok(!result.context.includes("September 28"));
   }
+  // Each brief now carries its own Fall 2026 dates; the all-assignments table stays out.
+  const a2 = retrieveContext("What is the deadline for Assignment 2?");
+  assert.ok(a2.context.includes("October 29, 2026"));
+  assert.ok(!a2.sources.some((source) => source.section.startsWith("DUE DATES")));
   assert.ok(getFactsForQuery("How many articles for Assignment 2?").includes("three peer-reviewed journal articles"));
 });
 
@@ -319,6 +342,16 @@ invariant("empty evidence and missing dates trigger honest grounding rules", () 
   assert.ok(!plan.system.includes('> "[one short specific quote]"'));
 });
 
+invariant("an Arabic question is classified and searched through its English translation", () => {
+  const arabic = "ما الفرق بين نموذج قبول التكنولوجيا والنظرية الموحدة؟";
+  const plan = buildGenerationPlan([{ role: "user", content: arabic }], EMPTY_PROFILE, "What is the difference between TAM and UTAUT?");
+  assert.equal(plan.intent, "retrieve");
+  assert.equal(plan.query, arabic);
+  assert.ok(plan.sources.some((source) => source.source === "D11_it_adoption_theories_scholarly.txt"));
+  assert.ok(!plan.system.includes("This is a follow-up."));
+  assert.ok(plan.system.includes("Reply in the language the student writes in"));
+});
+
 invariant("legitimate grade questions and appeals do not advance the begging ladder", () => {
   const plan = buildGenerationPlan([
     { role: "user", content: "How can I get a better grade?" },
@@ -332,7 +365,7 @@ invariant("legitimate grade questions and appeals do not advance the begging lad
 
 invariant("every generated source has a real document and section, with no authoring placeholders", () => {
   const index = JSON.parse(readFileSync(new URL("../../lib/retrieval/course-index.json", import.meta.url), "utf8"));
-  assert.equal(index.documentCount, 13);
+  assert.equal(index.documentCount, 16);
   assert.equal(index.contentHash, createHash("sha256").update(JSON.stringify(index.chunks)).digest("hex"));
   const rebuilt = [];
   const sourceNames = [...new Set<string>(index.chunks.map((chunk: { source: string }) => chunk.source))];

@@ -4,6 +4,8 @@ Instructor: Dr. Savanid (Nui) Vatanasakdakul
 ---
 ASSIGNMENT 1: CULTURAL FRAMEWORK ASSIGNMENT (20%)
 
+Fall 2026 dates: group presentations in class Monday September 28 and Wednesday September 30, 2026 (Week 6); slides due on Canvas Thursday October 1, 2026 at 11:59 p.m.
+
 Learning Objectives:
 - Review and critically evaluate key theories and frameworks on national culture.
 - Apply cultural theories to analyze technology adoption within a specific cultural context.
@@ -34,6 +36,8 @@ Quality of Presentation and Materials (20%): Professional format, readability, c
 ---
 ASSIGNMENT 2: IT ADOPTION FRAMEWORK ASSIGNMENT (20%)
 
+Fall 2026 dates: group presentations in class Monday October 26 and Wednesday October 28, 2026 (Week 9); slides due on Canvas Thursday October 29, 2026 at 11:59 p.m.
+
 Learning Objectives:
 - Review and critically evaluate key IT adoption frameworks.
 - Apply an IT adoption framework to analyze technology adoption in specific contexts.
@@ -47,8 +51,8 @@ Select three peer-reviewed journal articles that apply your framework. For each 
 - Discuss the factors influencing its adoption through the framework.
 - Explain how the framework provides insights into the adoption process.
 
-Step 3 — Case Study Analysis: Virtual Influencers
-Using your IT adoption framework, analyze the adoption of virtual influencers. Identify and discuss five factors that influence why people adopt or follow virtual influencers. Answer: "What factors influence the adoption of virtual influencers?" and "Why do people follow virtual influencers?"
+Step 3 — Case Study Analysis: Virtual Influencers (AI Influencers)
+Using your IT adoption framework, analyze the adoption of virtual influencers. The Fall 2026 class session calls them AI influencers: computer-generated personas run by human teams (see D15 for the AI vs. Human case session that sets up this step). Identify and discuss five factors that influence why people adopt or follow virtual influencers. Answer: "What factors influence the adoption of virtual influencers?" and "Why do people follow virtual influencers?"
 
 Deliverables:
 - 10-minute in-person presentation (7 minutes + 3 minutes Q&A)
@@ -64,6 +68,8 @@ Quality of Presentation and Materials (20%): Professional format, clarity, effec
 
 ---
 FINAL PROJECT (40%) — INDIVIDUAL ASSIGNMENT
+
+Fall 2026 dates: the Word report is due on Canvas by 11:59 p.m. on Monday November 23, 2026 (Week 13). Final project presentations are scheduled in Weeks 12 and 13.
 
 Learning Objectives:
 - Identify innovative technologies as case studies and conduct a scholarly literature review on existing technology adoption studies.
@@ -115,6 +121,8 @@ Professional Presentation (10%): Professional standard, minimal errors in format
 
 ---
 SELF-REFLECTIVE ESSAY (10%)
+
+Fall 2026 date: due Monday November 30, 2026 (Week 14) at 11:59 p.m.
 
 Write a 500-word essay reflecting on your experiences in this course. Discuss your lessons learned, your journey, and how you can apply what you learned to your future career. Prof Nui allows 10% less or 10% more — so 450 to 550 words is acceptable.
 

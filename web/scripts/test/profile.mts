@@ -45,7 +45,12 @@ test("invalid and legacy saved data always produces safe string fields", () => {
     assert.deepEqual(getSnapshot(), EMPTY_PROFILE, raw);
   }
   stored = JSON.stringify({ name: "  Ada\nLovelace  ", major: "M".repeat(300), year: "  Junior\u0000 " });
-  assert.deepEqual(getSnapshot(), { name: "Ada Lovelace", major: "M".repeat(120), year: "Junior" });
+  // Profiles saved before the Arabic address setting load as "ask the student".
+  assert.deepEqual(getSnapshot(), { name: "Ada Lovelace", major: "M".repeat(120), year: "Junior", gender: "" });
+  stored = JSON.stringify({ name: "Ada", gender: "<b>female</b>" });
+  assert.equal(getSnapshot().gender, "");
+  stored = JSON.stringify({ name: "Ada", gender: "female" });
+  assert.equal(getSnapshot().gender, "female");
 });
 
 test("server and unchanged browser snapshots preserve reference stability", () => {
@@ -92,12 +97,12 @@ test("successful storage recovery resumes persisted and cross-tab updates", () =
 test("local subscribers receive normalized edits and can unsubscribe", () => {
   let notified = 0;
   const unsubscribe = subscribe(() => { notified += 1; });
-  saveProfile({ name: " Ada\n ", major: " IS ", year: "" });
+  saveProfile({ name: " Ada\n ", major: " IS ", year: "", gender: "male" });
   assert.equal(notified, 1);
-  assert.deepEqual(getSnapshot(), { name: "Ada", major: "IS", year: "" });
+  assert.deepEqual(getSnapshot(), { name: "Ada", major: "IS", year: "", gender: "male" });
   assert.equal(storageListeners.size, 1);
   unsubscribe();
-  saveProfile({ name: "New", major: "", year: "" });
+  saveProfile({ name: "New", major: "", year: "", gender: "" });
   assert.equal(notified, 1);
   assert.equal(storageListeners.size, 0);
 });

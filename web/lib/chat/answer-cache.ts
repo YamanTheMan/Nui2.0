@@ -15,9 +15,10 @@
 import { createHash } from "node:crypto";
 
 import courseIndex from "../retrieval/course-index.json";
+import { qatarDateKey } from "./today";
 
 /** Bump when prompt wording changes in a way that should invalidate answers. */
-const PROMPT_VERSION = "v8-nui-2";
+const PROMPT_VERSION = "v9-nui-2";
 
 const CONTENT_VERSION = createHash("sha256")
   .update(JSON.stringify(courseIndex.chunks))
@@ -84,12 +85,13 @@ async function bestEffort<T>(pending: Promise<T>): Promise<T | null> {
   }
 }
 
-export function answerCacheKey(question: string, intent: string): string {
+export function answerCacheKey(question: string, intent: string, now = new Date()): string {
   const digest = createHash("sha256")
     .update(normaliseQuestion(question))
     .digest("hex")
     .slice(0, 24);
-  return `answer:${PROMPT_VERSION}:${CONTENT_VERSION}:${intent}:${digest}`;
+  // Answers can depend on whether a deadline has passed, so they never outlive the Qatar day.
+  return `answer:${PROMPT_VERSION}:${CONTENT_VERSION}:${qatarDateKey(now)}:${intent}:${digest}`;
 }
 
 type VercelCache = {

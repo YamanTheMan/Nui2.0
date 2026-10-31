@@ -75,6 +75,9 @@ test("sign-in, responsive welcome, keyboard and profile", async ({
   await page.getByRole("button", { name: /Your space/ }).click();
   await page.getByLabel("Your name", { exact: true }).fill("Test Student");
   await page.getByLabel("Major", { exact: true }).fill("Information Systems");
+  await page
+    .getByRole("combobox", { name: /In Arabic, address me as/ })
+    .selectOption("female");
   await page.getByRole("button", { name: "Save profile", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Profile saved" }),
@@ -82,6 +85,11 @@ test("sign-in, responsive welcome, keyboard and profile", async ({
   await page.keyboard.press("Escape");
   await page.reload();
   await expect(page.getByRole("heading", { name: /Hi Test/ })).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("askprofnui.profile")!).gender,
+    ),
+  ).toBe("female");
   expect(errors).toEqual([]);
 });
 test("browse and read actual course materials, then prepare a question", async ({
@@ -105,8 +113,14 @@ test("browse and read actual course materials, then prepare a question", async (
   await expect(update).not.toContainText("computer vision");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "All materials", exact: true }).click();
-  await expect(page.locator(".library-view .material-card")).toHaveCount(11);
-  await expect(page.locator(".library-view .class-update-card")).toHaveCount(1);
+  await expect(page.locator(".library-view .material-card")).toHaveCount(13);
+  await expect(page.locator(".library-view .class-update-card")).toHaveCount(2);
+  // The newest update comes first and carries every remaining Fall 2026 deadline.
+  await expect(page.locator(".library-view .class-update-card").first()).toContainText("Fall 2026 deadlines & contacts");
+  await page.getByRole("button", { name: /Fall 2026 deadlines & contacts/ }).click();
+  await expect(page.getByRole("dialog")).toContainText("November 23, 2026");
+  await expect(page.getByRole("dialog")).toContainText("Mazeeda Alihassan");
+  await page.keyboard.press("Escape");
   await page.getByLabel("Search course materials").fill("adoption");
   await expect(
     page.getByRole("button", { name: /Technology adoption/ }),

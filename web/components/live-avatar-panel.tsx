@@ -2,7 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { firstName, type StudentProfile } from "@/lib/student/profile";
+import {
+  firstName,
+  type StudentGender,
+  type StudentProfile,
+} from "@/lib/student/profile";
 import type { LiveLanguage } from "@/lib/voice/language";
 import { citationKey, type Citation } from "./citations-panel";
 import Icon from "./ui-icon";
@@ -15,7 +19,21 @@ type SessionState = {
   sessionToken: string;
   openingMessage: string;
   language: LiveLanguage;
+  gender: StudentGender;
 };
+
+// Arabic grammar differs for men and women. This choice applies to one session
+// and defaults to the saved profile; leaving it unset makes Nui ask and explain.
+const ADDRESS_OPTIONS: Array<[StudentGender, string]> = [
+  ["", "تسألني نُوي في البداية"],
+  ["female", "بصيغة المؤنث (طالبة)"],
+  ["male", "بصيغة المذكر (طالب)"],
+];
+const ADDRESS_COPY = {
+  legend: "كيف تخاطبك نُوي بالعربية؟",
+  why: "تختلف الكلمات في العربية عند مخاطبة الطالب والطالبة، لذلك تستخدم نُوي هذا الاختيار فقط لتتحدث معك بالصيغة الصحيحة.",
+  subtitles: "English subtitles appear on the video while Nui 2.0 speaks Arabic.",
+} as const;
 type Props = {
   profile: StudentProfile;
   onCitation: (citation: Citation) => void;
@@ -66,6 +84,7 @@ function LiveConversation({ profile, onCitation }: Props) {
   const [voices, setVoices] = useState<Voice[]>([]);
   const [voiceId, setVoiceId] = useState("");
   const [language, setLanguage] = useState<LiveLanguage>("en");
+  const [gender, setGender] = useState<StudentGender>(profile.gender);
   const [languages, setLanguages] = useState<Record<
     LiveLanguage,
     boolean
@@ -127,7 +146,7 @@ function LiveConversation({ profile, onCitation }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          profile,
+          profile: language === "ar" ? { ...profile, gender } : profile,
           language,
           ...(language === "en" ? { voiceId } : {}),
         }),
@@ -153,6 +172,7 @@ function LiveConversation({ profile, onCitation }: Props) {
           sessionToken: data.sessionToken,
           openingMessage: data.openingMessage,
           language,
+          gender: language === "ar" ? gender : "",
         });
     } catch (err) {
       if (!controller.signal.aborted)
@@ -172,6 +192,7 @@ function LiveConversation({ profile, onCitation }: Props) {
         <LiveAvatarStage
           key={`${language}:${session.sessionToken}`}
           language={language}
+          gender={session.gender}
           sessionToken={session.sessionToken}
           openingMessage={session.openingMessage}
           studentFirstName={firstName(profile.name)}
@@ -243,7 +264,30 @@ function LiveConversation({ profile, onCitation }: Props) {
               </select>
             </label>
           ) : language === "ar" ? (
-            <p className="live-language-voice">الصوت: نُوي · العربية الفصحى</p>
+            <>
+              <p className="live-language-voice">الصوت: نُوي · العربية الفصحى</p>
+              <fieldset className="live-language-select live-address-select" disabled={loading}>
+                <legend>{ADDRESS_COPY.legend}</legend>
+                <div className="live-language-options">
+                  {ADDRESS_OPTIONS.map(([value, label]) => (
+                    <label key={value || "ask"} className={gender === value ? "selected" : ""}>
+                      <input
+                        type="radio"
+                        name="live-address"
+                        value={value}
+                        checked={gender === value}
+                        onChange={() => setGender(value)}
+                      />
+                      <span>{label}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="live-address-why">{ADDRESS_COPY.why}</p>
+              </fieldset>
+              <p className="live-subtitle-note" lang="en" dir="ltr">
+                {ADDRESS_COPY.subtitles}
+              </p>
+            </>
           ) : null}
           {!languages && !availabilityError ? (
             <p role="status">{copy.checking}</p>

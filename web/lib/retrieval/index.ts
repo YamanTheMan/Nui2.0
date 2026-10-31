@@ -105,6 +105,14 @@ function idf(term: string, idx: Bm25Index): number {
  * NOT a probability that an answer is correct. It is independent of the best
  * hit: weak and out-of-corpus queries must not automatically score 1.
  */
+// Class case summaries and past students' example decks supplement the course
+// notes. They still answer what only they cover (TOE, the Lewis model, guest
+// talks) but never outrank the notes on a framework both describe.
+const SOURCE_WEIGHT: Record<string, number> = {
+  "D15_fall_2026_cases_and_guest_talks.txt": 0.75,
+  "D16_framework_example_presentations.txt": 0.6,
+};
+
 export function search(query: string, topK = 12): ScoredChunk[] {
   const idx = getIndex();
   const queryTokens = tokenize(query);
@@ -135,7 +143,8 @@ export function search(query: string, topK = 12): ScoredChunk[] {
   for (let docId = 0; docId < idx.total; docId += 1) {
     if (scores[docId] > 0) {
       const confidence = coverage[docId] / totalWeight;
-      ranked.push({ chunk: { ...CHUNKS[docId], score: confidence }, relevance: scores[docId] });
+      const weight = SOURCE_WEIGHT[CHUNKS[docId].source] ?? 1;
+      ranked.push({ chunk: { ...CHUNKS[docId], score: confidence }, relevance: scores[docId] * weight });
     }
   }
 

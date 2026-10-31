@@ -6,6 +6,7 @@ import {
   getCachedAnswer,
   setCachedAnswer,
 } from "@/lib/chat/answer-cache";
+import { englishSearchQuery } from "@/lib/chat/arabic";
 import { buildGenerationPlan } from "@/lib/chat/prompt";
 import { InvalidRequest, parseChatRequest, readJsonRequest } from "@/lib/chat/request";
 import { streamAnswer, TEXT_PART_ID } from "@/lib/chat/stream-answer";
@@ -21,7 +22,10 @@ export async function POST(req: Request) {
     return Response.json({ error: message }, { status: error instanceof InvalidRequest ? error.status : 400 });
   }
   const { turns, profile } = input;
-  const plan = buildGenerationPlan(turns, profile);
+  // The notes are English, so an Arabic question is also searched in English.
+  const lastQuestion = [...turns].reverse().find((turn) => turn.role === "user")?.content ?? "";
+  const englishQuery = await englishSearchQuery(lastQuestion, req.signal);
+  const plan = buildGenerationPlan(turns, profile, englishQuery);
   // Only validated text reaches the model: client-supplied system messages,
   // tool calls and source metadata are never converted into instructions.
   const modelMessages: ModelMessage[] = plan.cacheable
