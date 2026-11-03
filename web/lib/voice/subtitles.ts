@@ -4,9 +4,9 @@
  * subtitles: never a growing block of text.
  */
 
-/** About two lines at kiosk width. */
-export const MAX_CAPTION = 96;
-const MIN_CAPTION = 32;
+/** Two to three lines: long answers switch captions less often and viewers can read ahead. */
+export const MAX_CAPTION = 150;
+const MIN_CAPTION = 40;
 
 /**
  * Her Arabic speaking rate, in letters per second (spaces, punctuation and
@@ -107,3 +107,21 @@ export function foldResponsePart(text: string, part: ResponsePart): { text: stri
 
 /** A pause this long in the stream means the reply is complete even without a stop part. */
 export const REPLY_QUIET_MS = 250;
+
+/**
+ * Which word of a caption she is saying `elapsedMs` into it, pacing words by
+ * their length across the caption's share of her speech. Returns the word
+ * count once the caption is fully said. An estimate: the avatar reports no
+ * word timings.
+ */
+export function currentWordIndex(words: string[], elapsedMs: number, durationMs: number): number {
+  if (durationMs <= 0 || elapsedMs >= durationMs) return words.length;
+  const total = words.reduce((sum, word) => sum + word.length + 1, 0);
+  const reached = (Math.max(0, elapsedMs) / durationMs) * total;
+  let end = 0;
+  for (let index = 0; index < words.length; index += 1) {
+    end += words[index].length + 1;
+    if (reached < end) return index;
+  }
+  return words.length;
+}

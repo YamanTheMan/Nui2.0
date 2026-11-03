@@ -1,7 +1,7 @@
 "use client";
 
 import type { ElevenLabsAgentSession } from "@heygen/liveavatar-web-sdk";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
 import { classifyIntent } from "@/lib/chat/intent";
 import { gradeChangeDirection, gradeChangeLevel } from "@/lib/chat/persona";
@@ -19,6 +19,7 @@ import {
   captionOffsets,
   CATCH_UP_MS,
   currentCaptionIndex,
+  currentWordIndex,
   foldResponsePart,
   LINGER_MS,
   REPLY_QUIET_MS,
@@ -128,6 +129,35 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
+type ShownCaption = { text: string; start: number; duration: number };
+
+/**
+ * One caption, highlighted word by word as she says it so a viewer who does
+ * not speak Arabic can follow along. Said words are bright, the current word
+ * is marked, and the rest are dimmed.
+ */
+function CaptionText({ caption }: { caption: ShownCaption }) {
+  const words = caption.text.split(" ");
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 80);
+    return () => clearInterval(timer);
+  }, [caption]);
+  const current = currentWordIndex(words, now - caption.start, caption.duration);
+  return (
+    <p>
+      {words.map((word, index) => (
+        <Fragment key={index}>
+          {index > 0 ? " " : null}
+          <span className={index < current ? "said" : index === current ? "now" : "upcoming"}>
+            {word}
+          </span>
+        </Fragment>
+      ))}
+    </p>
+  );
+}
+
 /** Browser-only SDK; every timer and callback belongs to one mounted session. */
 export default function LiveAvatarStage({
   language,
@@ -150,7 +180,7 @@ export default function LiveAvatarStage({
   const [isMuted, setIsMuted] = useState(false);
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
   const [muting, setMuting] = useState(false);
-  const [subtitle, setSubtitle] = useState("");
+  const [subtitle, setSubtitle] = useState<ShownCaption | null>(null);
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const onCitationRef = useRef(onCitation);
   const onEndedRef = useRef(onEnded);
@@ -198,6 +228,7 @@ export default function LiveAvatarStage({
     let waitingCaptions: { captions: string[]; chars: number } | null = null;
     let sawReplyStream = false;
     let streamText = "";
+    let streamStartedAt = 0;
     let streamTimer: ReturnType<typeof setTimeout> | undefined;
     let gotReplyText = false;
     let chunkText = "";
@@ -212,15 +243,18 @@ export default function LiveAvatarStage({
       }, Math.max(0, delay));
       captionTimers.add(timer);
     };
-    const showCaption = (index: number) => {
+    // `start` is when she began saying this caption, possibly in the past when
+    // joining mid-reply, so the word highlight starts at the right word.
+    const showCaption = (index: number, start: number, duration: number) => {
       captionIndex = index;
-      setSubtitle(captionQueue[index] ?? "");
+      const text = captionQueue[index];
+      setSubtitle(text ? { text, start, duration } : null);
     };
     const hideCaptions = () => {
       clearCaptionTimers();
       waitingCaptions = null;
       captionQueue = [];
-      setSubtitle("");
+      setSubtitle(null);
     };
     const playCaptions = (captions: string[], chars: number, anchor: number) => {
       clearCaptionTimers();
@@ -228,13 +262,17 @@ export default function LiveAvatarStage({
       captionQueue = captions;
       captionAnchor = anchor;
       captionChars = chars;
-      const offsets = captionOffsets(captions, (chars / charsPerSecond) * 1000);
+      const total = (chars / charsPerSecond) * 1000;
+      const offsets = captionOffsets(captions, total);
+      const timing = (index: number): [number, number] =>
+        [anchor + offsets[index], (offsets[index + 1] ?? total) - offsets[index]];
       const now = Date.now();
       // Joining mid-reply starts at the caption that belongs on screen now.
-      showCaption(currentCaptionIndex(offsets, now - anchor));
+      const first = currentCaptionIndex(offsets, now - anchor);
+      showCaption(first, ...timing(first));
       for (let index = captionIndex + 1; index < captions.length; index += 1) {
         const next = index;
-        captionLater(() => showCaption(next), anchor + offsets[next] - now);
+        captionLater(() => showCaption(next, ...timing(next)), anchor + offsets[next] - now);
       }
     };
     // Shows captions from `from` onward at a brisk fixed pace, then clears the screen.
@@ -244,27 +282,29 @@ export default function LiveAvatarStage({
       let delay = firstDelay;
       for (let index = from; index < captionQueue.length; index += 1) {
         const next = index;
-        captionLater(() => showCaption(next), delay);
+        captionLater(() => showCaption(next, Date.now(), CATCH_UP_MS), delay);
         delay += CATCH_UP_MS;
       }
       captionLater(hideCaptions, delay - CATCH_UP_MS + LINGER_MS);
     };
-    const showReply = (english: string, chars: number, arrived: number) => {
+    // `began` is when this reply started arriving: a corrected text for the
+    // reply she is already saying keeps its place instead of restarting.
+    const showReply = (english: string, chars: number, began: number) => {
       const captions = splitCaptions(english);
       if (captions.length === 0) return;
       // Text normally arrives just before or as she starts saying it.
-      if (speakingSince && arrived - speakingSince < 4000) {
+      if (speakingSince && began - speakingSince < 4000) {
         playCaptions(captions, chars, speakingSince);
         return;
       }
       // She already finished saying it while the translation was on its way.
-      if (!speakingSince && lastSpeechEndedAt > arrived) {
+      if (!speakingSince && lastSpeechEndedAt > began) {
         captionQueue = captions;
         catchUp(0, 0);
         return;
       }
       clearCaptionTimers();
-      setSubtitle("");
+      setSubtitle(null);
       captionQueue = [];
       waitingCaptions = { captions, chars };
       // If her speech never reports a start, show the reply anyway.
@@ -297,15 +337,14 @@ export default function LiveAvatarStage({
       clearTimeout(streamTimer);
       if (!streamText.trim()) return;
       gotReplyText = true;
-      translate(streamText);
+      translate(streamText, streamStartedAt || Date.now());
     };
-    const translate = (arabic: string) => {
+    const translate = (arabic: string, began = Date.now()) => {
       const text = arabic.trim().slice(0, 2000);
       const key = subtitleKey(text);
       if (!subtitles || !key || replyKeys.has(key)) return;
       replyKeys.add(key);
       const seq = (replySeq += 1);
-      const arrived = Date.now();
       fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -316,7 +355,7 @@ export default function LiveAvatarStage({
         .then((data: { english?: unknown } | null) => {
           if (!isActive() || ending || seq !== replySeq) return;
           if (typeof data?.english !== "string" || !data.english.trim()) return;
-          showReply(data.english.trim(), key.length, arrived);
+          showReply(data.english.trim(), key.length, began);
         })
         .catch(() => {
           /* subtitles are best-effort; the spoken answer is unaffected */
@@ -574,7 +613,9 @@ export default function LiveAvatarStage({
           // The reply streams in before or as she starts speaking: translate it
           // as soon as it ends, or after a short pause if no stop part comes.
           sawReplyStream = true;
-          const folded = foldResponsePart(streamText, asRecord(outer.text_response_part));
+          const part = asRecord(outer.text_response_part);
+          if (part.type === "start") streamStartedAt = Date.now();
+          const folded = foldResponsePart(streamText, part);
           streamText = folded.text;
           clearTimeout(streamTimer);
           if (folded.done) translateStream();
@@ -587,7 +628,8 @@ export default function LiveAvatarStage({
           if (typeof reply === "string") {
             sawReplyStream = true;
             gotReplyText = true;
-            translate(reply);
+            // It completes the latest streamed reply, so it shares its start time.
+            translate(reply, streamStartedAt || Date.now());
           }
           return;
         }
@@ -734,7 +776,7 @@ export default function LiveAvatarStage({
             lang="en"
             dir="ltr"
           >
-            <p>{subtitle}</p>
+            <CaptionText caption={subtitle} />
           </div>
         ) : null}
         {isLive && !overlay ? (

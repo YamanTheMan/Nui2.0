@@ -16,6 +16,7 @@ import {
   ARABIC_CHARS_PER_SECOND,
   captionOffsets,
   currentCaptionIndex,
+  currentWordIndex,
   foldResponsePart,
   MAX_CAPTION,
   REPLY_QUIET_MS,
@@ -222,6 +223,22 @@ test("captions are paced across the speech and catch up when she joins mid-reply
   assert.equal(updateSpeakingRate(13, 20, 10), 13);
   assert.equal(updateSpeakingRate(13, 150, 1), 13);
   assert.equal(updateSpeakingRate(13, 900, 10), 13);
+});
+
+test("the word highlight moves through a caption at her pace and finishes on time", () => {
+  const words = ["Digital", "transformation", "is", "a", "process."];
+  assert.equal(currentWordIndex(words, 0, 4000), 0);
+  assert.equal(currentWordIndex(words, -500, 4000), 0);
+  assert.equal(currentWordIndex(words, 1500, 4000), 1);
+  assert.equal(currentWordIndex(words, 3900, 4000), 4);
+  assert.equal(currentWordIndex(words, 4000, 4000), words.length);
+  assert.equal(currentWordIndex(words, 100, 0), words.length);
+  let previous = 0;
+  for (let ms = 0; ms <= 4000; ms += 100) {
+    const index = currentWordIndex(words, ms, 4000);
+    assert.ok(index >= previous, "the highlight never moves backwards");
+    previous = index;
+  }
 });
 
 test("subtitles start from the streamed reply text, not the late complete-reply event", () => {
