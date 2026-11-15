@@ -95,7 +95,7 @@ class AgentLanguageIsolationTests(unittest.TestCase):
         self.assertEqual(english["conversation_config"]["agent"]["prompt"]["knowledge_base"][0]["id"], "existing-doc")
 
     def test_current_identity_overrides_legacy_branding_in_both_languages(self):
-        for language, name in [("en", "Nui 2.0"), ("ar", "نُوي ٢٫٠")]:
+        for language, name in [("en", "Nooey two point oh"), ("ar", "نُوِي تو بوينت أو")]:
             with self.subTest(language=language):
                 prompt = sync._load_system_prompt(language)
                 identity = prompt.split("WHO YOU ARE\n", 1)[1].split("\n\n", 1)[0]

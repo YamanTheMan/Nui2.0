@@ -70,11 +70,21 @@ export function sessionOpening({ name, major, year }: StudentProfile): string {
   );
 }
 
+/**
+ * The voice reads "Nui" as "nu-I" and "2.0" as "two point zero". Spoken text
+ * spells her name the way it sounds: "Nooey", and "two point oh" like the letter O.
+ */
+export const SPOKEN_NAME = "Nooey two point oh";
+
+export function spokenText(text: string): string {
+  return text.replace(/\bNui\s*2\.0\b/g, SPOKEN_NAME).replace(/\bNui\b/g, "Nooey");
+}
+
 export function elevenLabsDynamicVariables(profile: StudentProfile): Record<string, string> {
   return {
     student_name: firstName(profile.name) || "there",
     student_major: profile.major.trim() || "your major",
     student_year: profile.year.trim() || "your year",
-    session_opening: sessionOpening(profile),
+    session_opening: spokenText(sessionOpening(profile)),
   };
 }

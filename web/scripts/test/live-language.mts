@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { after, beforeEach, test } from "node:test";
 import { GET, POST } from "../../app/api/live-session/route.ts";
-import { elevenLabsDynamicVariables, sessionOpening } from "../../lib/student/profile.ts";
+import { elevenLabsDynamicVariables, sessionOpening, spokenText } from "../../lib/student/profile.ts";
 import { configIsComplete, createSessionToken, getLiveAvatarConfig, missingLiveAvatarKeys } from "../../lib/voice/liveavatar.ts";
 import {
   arabicAddressNote,
@@ -86,7 +86,7 @@ test("omitted language preserves the English agent, selectable voice, variables 
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("Cache-Control"), "no-store");
   assert.deepEqual(await response.json(), {
-    sessionId: "test-session", sessionToken: "test-token", language: "en", openingMessage: sessionOpening(profile),
+    sessionId: "test-session", sessionToken: "test-token", language: "en", openingMessage: spokenText(sessionOpening(profile)),
   });
   assert.deepEqual(sentBody(), {
     mode: "LITE", avatar_id: "shared-avatar", is_sandbox: true,
@@ -97,7 +97,12 @@ test("omitted language preserves the English agent, selectable voice, variables 
   });
   assert.equal(calls[0].options.cache, "no-store");
   assert.deepEqual(liveDynamicVariables(profile, "en"), elevenLabsDynamicVariables(profile));
-  assert.equal(liveSessionOpening(profile, "en"), sessionOpening(profile));
+  // The voice hears the name spelled as it sounds; the written welcome keeps "Nui 2.0".
+  assert.equal(liveSessionOpening(profile, "en"), spokenText(sessionOpening(profile)));
+  assert.match(sessionOpening(profile), /I'm Nui 2\.0\./);
+  assert.match(liveSessionOpening(profile, "en"), /I'm Nooey two point oh\./);
+  assert.doesNotMatch(liveSessionOpening(profile, "en"), /\bNui\b|2\.0/);
+  assert.doesNotMatch(liveSessionOpening({ ...profile, gender: "" }, "ar"), /نوي 2|2\.0|٢٫٠/);
 });
 
 test("Arabic routes to its own agent and configured clone while sharing the avatar connection", async () => {
@@ -106,7 +111,7 @@ test("Arabic routes to its own agent and configured clone while sharing the avat
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.language, "ar");
-  assert.equal(result.openingMessage, "مرحبًا سارة، أنا نوي 2.0. كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟");
+  assert.equal(result.openingMessage, "مرحبًا سارة، أنا نُوِي تو بوينت أو. كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟");
   const body = sentBody();
   assert.equal(body.avatar_id, "shared-avatar");
   assert.equal(body.elevenlabs_agent_config.secret_id, "shared-secret");
@@ -166,7 +171,7 @@ test("Arabic openings do not interpolate instruction-bearing fields or template/
     } }));
     assert.equal(result.status, 200);
     const body = await result.json();
-    assert.equal(body.openingMessage, "مرحبًا، أنا نوي 2.0. قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟");
+    assert.equal(body.openingMessage, "مرحبًا، أنا نُوِي تو بوينت أو. قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟");
     const sent = JSON.parse(String(calls.at(-1)!.options.body));
     for (const value of Object.values(sent.elevenlabs_agent_config.dynamic_variables)) {
       assert.doesNotMatch(String(value), /[{}<>\u0000-\u001f]/);
@@ -176,7 +181,7 @@ test("Arabic openings do not interpolate instruction-bearing fields or template/
 
 test("Arabic openings ask how to address the student unless the profile says, and explain why", () => {
   const base = { name: "", major: "", year: "" };
-  assert.equal(liveSessionOpening({ ...base, gender: "" }, "ar"), "مرحبًا، أنا نوي 2.0. قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟");
+  assert.equal(liveSessionOpening({ ...base, gender: "" }, "ar"), "مرحبًا، أنا نُوِي تو بوينت أو. قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟");
   assert.match(liveSessionOpening({ ...base, gender: "female" }, "ar"), /مساعدتكِ/);
   assert.match(liveSessionOpening({ ...base, gender: "male" }, "ar"), /مساعدتكَ/);
   // English is a one-gender language here: the setting never changes it.

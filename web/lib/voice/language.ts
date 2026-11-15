@@ -2,6 +2,7 @@ import {
   elevenLabsDynamicVariables,
   firstName,
   sessionOpening,
+  spokenText,
   type StudentGender,
   type StudentProfile,
 } from "../student/profile";
@@ -34,10 +35,13 @@ function arabicProfileLabel(value: string, fallback: string): string {
   return label || fallback;
 }
 
+export const ARABIC_SPOKEN_NAME = "نُوِي تو بوينت أو";
+
 export function liveSessionOpening(profile: StudentProfile, language: LiveLanguage = "en"): string {
-  if (language === "en") return sessionOpening(profile);
+  if (language === "en") return spokenText(sessionOpening(profile));
   const name = arabicGreetingName(profile.name);
-  const hello = `مرحبًا${name ? ` ${name}` : ""}، أنا نوي 2.0.`;
+  // Spelled as it should sound: "nooey", then "two point O" as in the letter.
+  const hello = `مرحبًا${name ? ` ${name}` : ""}، أنا ${ARABIC_SPOKEN_NAME}.`;
   // The diacritic tells the voice which form to pronounce.
   if (profile.gender === "female") return `${hello} كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟`;
   if (profile.gender === "male") return `${hello} كيف يمكنني مساعدتكَ اليوم في مادة التحول الرقمي؟`;

@@ -92,7 +92,7 @@ def _dynamic_variable_placeholders(language: str = "en") -> dict[str, str]:
             "student_major": "",
             "student_year": "",
             "session_opening": (
-                "مرحباً، كيف حالك؟ أنا نُوي ٢٫٠، المساعدة التعليمية بالذكاء الاصطناعي "
+                "مرحباً، كيف حالك؟ أنا نُوِي تو بوينت أو، المساعدة التعليمية بالذكاء الاصطناعي "
                 "لمقرر التحول الرقمي. كيف يمكنني مساعدتك اليوم؟"
             ),
         }
@@ -102,7 +102,8 @@ def _dynamic_variable_placeholders(language: str = "en") -> dict[str, str]:
         "student_name": "there",
         "student_major": "your major",
         "student_year": "your year",
-        "session_opening": session_opening("", "", ""),
+        # Spelled as spoken; the web app sends the real opener the same way.
+        "session_opening": session_opening("", "", "").replace("Nui 2.0", "Nooey two point oh"),
     }
 
 
