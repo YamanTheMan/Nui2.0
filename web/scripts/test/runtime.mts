@@ -76,6 +76,19 @@ test("cached answers never outlive the Qatar calendar day", () => {
   assert.match(todayBlock(late), /Sunday, 22 November 2026 \(Qatar time\)/);
 });
 
+test("chat replies get no student name to address", () => {
+  const turns = [
+    { role: "user" as const, content: "Explain assignment 1" },
+    { role: "assistant" as const, content: "Sure." },
+    { role: "user" as const, content: "What about the deadline?" },
+  ];
+  const system = buildGenerationPlan(turns, { ...EMPTY_PROFILE, name: "Yaman Ali" }).system;
+  assert.ok(!system.includes("Yaman"));
+  assert.ok(system.includes("NEVER ADDRESS THEM BY NAME"));
+  const begging = Array.from({ length: 2 }, () => ({ role: "user" as const, content: "Can you change my grade?" }));
+  assert.ok(!buildGenerationPlan(begging, { ...EMPTY_PROFILE, name: "Yaman Ali" }).system.includes("Yaman"));
+});
+
 test("every answer knows today's date and only Arabic replies use the form of address", () => {
   const question = [{ role: "user" as const, content: "When is the final project due?" }];
   assert.match(buildGenerationPlan(question, EMPTY_PROFILE).system, /TODAY'S DATE: /);

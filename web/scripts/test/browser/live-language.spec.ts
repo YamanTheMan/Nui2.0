@@ -29,7 +29,7 @@ async function openLive(page: Page) {
     .getByLabel("Password", { exact: true })
     .fill(process.env.LOGIN_PASSWORD ?? "");
   await page.getByRole("button", { name: "Step inside" }).click();
-  await expect(page.getByRole("heading", { name: /Hi Test/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Big ideas/ })).toBeVisible();
   if ((page.viewportSize()?.width ?? 1440) <= 720) {
     await page.getByRole("button", { name: "Open navigation" }).click();
   }

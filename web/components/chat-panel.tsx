@@ -1,7 +1,7 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { firstName, questionProfile, type StudentProfile } from "@/lib/student/profile";
+import { addressName, questionProfile, type StudentProfile } from "@/lib/student/profile";
 import { useRecapEnabled } from "@/lib/recap/client";
 import type { RecapTurn } from "@/lib/recap/summarize";
 import { sourceTitle } from "@/lib/course-catalog";
@@ -230,9 +230,9 @@ export default function ChatPanel({
         <>
           <div className="welcome-heading">
             <h1>
-              {profile.name ? (
+              {addressName(profile.name) ? (
                 <>
-                  Hi {firstName(profile.name)}.<br />
+                  Hi {addressName(profile.name)}.<br />
                   What&apos;s on your mind?
                 </>
               ) : (
@@ -360,7 +360,7 @@ export default function ChatPanel({
                   {!user && <BrandMark small />}
                   <div className="message-content">
                     <span className="message-label">
-                      {user ? firstName(profile.name) || "You" : "Prof Nui"}
+                      {user ? addressName(profile.name) || "You" : "Prof Nui"}
                       {!user && <span>AI COURSE COMPANION</span>}
                     </span>
                     <div className="message-body">

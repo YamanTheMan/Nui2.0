@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import {
-  firstName,
+  addressName,
   normaliseAndrewEmail,
   questionProfile,
   type StudentGender,
@@ -229,7 +229,7 @@ function LiveConversation({ profile, onCitation }: Props) {
           gender={session.gender}
           sessionToken={session.sessionToken}
           openingMessage={session.openingMessage}
-          studentFirstName={firstName(profile.name)}
+          studentFirstName={addressName(profile.name)}
           onCitation={onCitation}
           onTurn={(turn) => turns.current?.add(turn)}
           onEnded={(reason) => {
@@ -253,14 +253,14 @@ function LiveConversation({ profile, onCitation }: Props) {
           <span className="eyebrow">{copy.eyebrow}</span>
           <h2>{copy.title}</h2>
           <p>
-            {profile.name ? (
+            {addressName(profile.name) ? (
               language === "ar" ? (
                 <>
-                  أهلًا <bdi>{firstName(profile.name)}</bdi>، أنا هنا
+                  أهلًا <bdi>{addressName(profile.name)}</bdi>، أنا هنا
                   لمساعدتك.{" "}
                 </>
               ) : (
-                `Ready when you are, ${firstName(profile.name)}. `
+                `Ready when you are, ${addressName(profile.name)}. `
               )
             ) : null}
             {copy.intro}

@@ -111,7 +111,7 @@ test("Arabic routes to its own agent and configured clone while sharing the avat
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.language, "ar");
-  assert.equal(result.openingMessage, "مرحبًا سارة، أنا نُوِي تو بوينت أو. كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟");
+  assert.equal(result.openingMessage, "مرحبًا، أنا نُوِي تو بوينت أو. كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟");
   const body = sentBody();
   assert.equal(body.avatar_id, "shared-avatar");
   assert.equal(body.elevenlabs_agent_config.secret_id, "shared-secret");
@@ -176,6 +176,18 @@ test("Arabic openings do not interpolate instruction-bearing fields or template/
     for (const value of Object.values(sent.elevenlabs_agent_config.dynamic_variables)) {
       assert.doesNotMatch(String(value), /[{}<>\u0000-\u001f]/);
     }
+  }
+});
+
+test("Nui never addresses a student by name, with or without one in the profile", () => {
+  const named = { name: "Yaman Ali", major: "Information Systems", year: "Junior", gender: "male" as const };
+  const blank = { name: "", major: "", year: "", gender: "male" as const };
+  for (const language of ["en", "ar"] as const) {
+    assert.equal(liveSessionOpening(named, language), liveSessionOpening(blank, language));
+    assert.doesNotMatch(liveSessionOpening(named, language), /Yaman|there|student1|طالب/i);
+    const variables = liveDynamicVariables(named, language);
+    assert.doesNotMatch(variables.student_name, /Yaman|صديق|طالب/);
+    assert.doesNotMatch(variables.session_opening, /Yaman/);
   }
 });
 

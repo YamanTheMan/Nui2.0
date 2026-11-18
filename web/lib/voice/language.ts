@@ -1,6 +1,6 @@
 import {
+  addressName,
   elevenLabsDynamicVariables,
-  firstName,
   sessionOpening,
   spokenText,
   type StudentGender,
@@ -22,7 +22,7 @@ export function isLiveLanguage(value: unknown): value is LiveLanguage {
 // Profile fields are student input. Only a short, name-shaped first token is
 // spoken in the Arabic opening; template/markup syntax never enters it.
 function arabicGreetingName(name: string): string {
-  const first = firstName(name);
+  const first = addressName(name);
   return /^[\p{L}\p{M}][\p{L}\p{M}'’\-]{0,39}$/u.test(first) ? first : "";
 }
 
@@ -83,7 +83,7 @@ export function liveDynamicVariables(
 ): Record<string, string> {
   if (language === "en") return elevenLabsDynamicVariables(profile);
   return {
-    student_name: arabicGreetingName(profile.name) || "صديقنا الطالب",
+    student_name: arabicGreetingName(profile.name) || "غير محدد",
     student_major: arabicProfileLabel(profile.major, "غير محدد"),
     student_year: arabicProfileLabel(profile.year, "غير محدد"),
     session_opening: liveSessionOpening(profile, language),

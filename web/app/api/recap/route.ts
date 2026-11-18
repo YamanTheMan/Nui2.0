@@ -2,7 +2,7 @@ import { InvalidRequest, readJsonRequest } from "@/lib/chat/request";
 import { composeRecapEmail } from "@/lib/recap/email";
 import { allowRecap, recapConfigured, sendRecapEmail } from "@/lib/recap/send";
 import { summarizeSession, type RecapTurn } from "@/lib/recap/summarize";
-import { firstName, normaliseAndrewEmail } from "@/lib/student/profile";
+import { addressName, normaliseAndrewEmail } from "@/lib/student/profile";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     if (!email) throw new InvalidRequest("Use your @andrew.cmu.edu address.");
     turns = readTurns(raw.turns);
     if (!turns.some((turn) => turn.role === "student")) throw new InvalidRequest("There is nothing to recap yet.");
-    name = typeof raw.name === "string" ? firstName(raw.name.replace(/[^\p{L}\p{M}'’ -]/gu, " ")).slice(0, 40) : "";
+    name = typeof raw.name === "string" ? addressName(raw.name.replace(/[^\p{L}\p{M}'’ -]/gu, " ")).slice(0, 40) : "";
   } catch (error) {
     return Response.json(
       { error: error instanceof InvalidRequest ? error.message : "Invalid request." },

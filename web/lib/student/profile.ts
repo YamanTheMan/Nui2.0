@@ -33,15 +33,27 @@ export function normaliseGender(value: unknown): StudentGender {
   return value === "female" || value === "male" ? value : "";
 }
 
+/**
+ * Nui speaks normally for now, without addressing students by name, whatever
+ * the profile says. Set to true to bring names back in the app; the voice
+ * agent prompts and persona carry a matching "never address by name" rule.
+ */
+export const ADDRESS_STUDENTS_BY_NAME: boolean = false;
+
 export function firstName(fullName: string): string {
   const trimmed = fullName.trim();
   if (!trimmed) return "";
   return trimmed.split(/\s+/)[0];
 }
 
+/** The name Nui may call this student, or empty when she should not use one. */
+export function addressName(fullName: string): string {
+  return ADDRESS_STUDENTS_BY_NAME ? firstName(fullName) : "";
+}
+
 /** Warm opener used for the live voice session and the text chat welcome. */
 export function sessionOpening({ name, major, year }: StudentProfile): string {
-  const first = firstName(name);
+  const first = addressName(name);
   const trimmedMajor = major.trim();
   const trimmedYear = year.trim();
 
@@ -82,7 +94,7 @@ export function spokenText(text: string): string {
 
 export function elevenLabsDynamicVariables(profile: StudentProfile): Record<string, string> {
   return {
-    student_name: firstName(profile.name) || "there",
+    student_name: addressName(profile.name) || "not shared",
     student_major: profile.major.trim() || "your major",
     student_year: profile.year.trim() || "your year",
     session_opening: spokenText(sessionOpening(profile)),

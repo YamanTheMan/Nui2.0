@@ -146,7 +146,7 @@ test("a session recap is summarised and sent to that student only", async () => 
   const sent = resendBodies[0];
   assert.deepEqual(sent.to, ["sara.ali@andrew.cmu.edu"]);
   assert.equal(sent.from, fixtureEnv.RECAP_FROM);
-  assert.match(String(sent.text), /^Hi Sara,/);
+  assert.match(String(sent.text), /^Hi there,/);
   assert.match(String(sent.text), /You asked when the final report is due\./);
   assert.match(String(sent.text), /Coming up\n- Final project report/);
 });

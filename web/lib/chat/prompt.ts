@@ -19,7 +19,7 @@ import {
 } from "./persona";
 import { todayBlock } from "./today";
 import { search, type ScoredChunk } from "../retrieval";
-import { firstName, type StudentProfile } from "../student/profile";
+import { addressName, type StudentProfile } from "../student/profile";
 
 export const CHAT_MODEL = "openai/gpt-oss-120b";
 export const FAST_MODEL = "openai/gpt-oss-20b";
@@ -130,11 +130,11 @@ gender from a name or writing style: phrase the reply without gendered second-pe
 
 function studentContextBlock(profile: StudentProfile): string {
   const parts: string[] = [];
-  const name = profile.name.trim();
+  const name = addressName(profile.name);
   const major = profile.major.trim();
   const year = profile.year.trim();
 
-  if (name) parts.push(`First name: ${JSON.stringify(firstName(name).slice(0, 80))}`);
+  if (name) parts.push(`First name: ${JSON.stringify(name.slice(0, 80))}`);
   if (major) parts.push(`Major: ${JSON.stringify(major.slice(0, 120))}`);
   if (year) parts.push(`Year: ${JSON.stringify(year.slice(0, 40))}`);
   if (profile.gender) parts.push(`Arabic form of address: ${profile.gender === "female" ? "feminine" : "masculine"}`);
@@ -344,7 +344,7 @@ export function buildGenerationPlan(
 
   if (intent === "grade_change") {
     const level = gradeChangeLevel(gradeChangeAttemptCount(turns));
-    system += `\n\n${gradeChangeDirection(level, firstName(profile.name))}`;
+    system += `\n\n${gradeChangeDirection(level, addressName(profile.name))}`;
     endsSession = level === "over";
     temperature = 0.75;
     maxOutputTokens = level === "first" ? 90 : 200;

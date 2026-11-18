@@ -84,7 +84,7 @@ test("sign-in, responsive welcome, keyboard and profile", async ({
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await page.reload();
-  await expect(page.getByRole("heading", { name: /Hi Test/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Big ideas/ })).toBeVisible();
   expect(
     await page.evaluate(
       () => JSON.parse(localStorage.getItem("askprofnui.profile")!).gender,
