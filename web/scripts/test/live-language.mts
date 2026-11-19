@@ -111,7 +111,7 @@ test("Arabic routes to its own agent and configured clone while sharing the avat
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.language, "ar");
-  assert.equal(result.openingMessage, "مرحبًا، أنا نُوِي تو بوينت أو. كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟");
+  assert.equal(result.openingMessage, "مرحبًا، أنا نُوِي تو بوينت أو. ما الذي تودّين أن تسألي عنه اليوم في مادة التحول الرقمي؟");
   const body = sentBody();
   assert.equal(body.avatar_id, "shared-avatar");
   assert.equal(body.elevenlabs_agent_config.secret_id, "shared-secret");
@@ -194,8 +194,15 @@ test("Nui never addresses a student by name, with or without one in the profile"
 test("Arabic openings ask how to address the student unless the profile says, and explain why", () => {
   const base = { name: "", major: "", year: "" };
   assert.equal(liveSessionOpening({ ...base, gender: "" }, "ar"), "مرحبًا، أنا نُوِي تو بوينت أو. قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟");
-  assert.match(liveSessionOpening({ ...base, gender: "female" }, "ar"), /مساعدتكِ/);
-  assert.match(liveSessionOpening({ ...base, gender: "male" }, "ar"), /مساعدتكَ/);
+  // The form is carried by letters, not by a vowel mark the voice ignores.
+  const female = liveSessionOpening({ ...base, gender: "female" }, "ar");
+  const male = liveSessionOpening({ ...base, gender: "male" }, "ar");
+  assert.match(female, /تودّين أن تسألي/);
+  assert.match(male, /تودّ أن تسأل عنه/);
+  assert.doesNotMatch(male, /تودّين|تسألي|كِ/);
+  assert.doesNotMatch(male + female, /مساعدتك/);
+  assert.match(arabicGreetingFollowUp(""), /تودّ أن تسأل عنه/);
+  assert.match(arabicGreetingFollowUp("male"), /لا تستخدم صيغة المؤنث/);
   // English is a one-gender language here: the setting never changes it.
   assert.equal(liveSessionOpening({ ...profile, gender: "female" }, "en"), liveSessionOpening({ ...profile, gender: "" }, "en"));
   assert.match(arabicGreetingFollowUp(""), /لا تفترض الجنس/);

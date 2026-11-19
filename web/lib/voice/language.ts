@@ -42,26 +42,38 @@ export function liveSessionOpening(profile: StudentProfile, language: LiveLangua
   const name = arabicGreetingName(profile.name);
   // Spelled as it should sound: "nooey", then "two point O" as in the letter.
   const hello = `مرحبًا${name ? ` ${name}` : ""}، أنا ${ARABIC_SPOKEN_NAME}.`;
-  // The diacritic tells the voice which form to pronounce.
-  if (profile.gender === "female") return `${hello} كيف يمكنني مساعدتكِ اليوم في مادة التحول الرقمي؟`;
-  if (profile.gender === "male") return `${hello} كيف يمكنني مساعدتكَ اليوم في مادة التحول الرقمي؟`;
+  if (profile.gender) return `${hello} ${arabicHelpQuestion(profile.gender)}`;
   // Without a stated preference, ask and say why rather than guess from a name or voice.
   return `${hello} قبل أن نبدأ، سؤال سريع: في العربية تختلف صيغة الكلام عند مخاطبة الطالب والطالبة، ` +
     "وأودّ أن أخاطبك بالصيغة الصحيحة. هل أخاطبك بصيغة الطالب أم الطالبة؟";
 }
 
+/**
+ * "How can I help you?" for one gender. The voice ignores vowel marks such as
+ * مساعدتكَ / مساعدتكِ and tends to say the feminine one, so the gender is
+ * carried by letters it cannot miss: تودّ / تودّين, تسأل / تسألي.
+ */
+export function arabicHelpQuestion(gender: Exclude<StudentGender, "">): string {
+  return gender === "female"
+    ? "ما الذي تودّين أن تسألي عنه اليوم في مادة التحول الرقمي؟"
+    : "ما الذي تودّ أن تسأل عنه اليوم في مادة التحول الرقمي؟";
+}
+
 /** Session note for the Arabic agent: which grammatical form to use for the student. */
 export function arabicAddressNote(gender: Exclude<StudentGender, "">): string {
   return gender === "female"
-    ? "صيغة المخاطبة: الطالبة أنثى. خاطبها بصيغة المؤنث طوال هذه الجلسة (أنتِ، يمكنكِ، تستطيعين، سؤالكِ) ولا تسألها عن ذلك مرة أخرى."
-    : "صيغة المخاطبة: الطالب ذكر. خاطبه بصيغة المذكر طوال هذه الجلسة (أنتَ، يمكنكَ، تستطيع، سؤالكَ) ولا تسأله عن ذلك مرة أخرى.";
+    ? "صيغة المخاطبة: الطالبة أنثى. خاطبها بصيغة المؤنث طوال هذه الجلسة (أنتِ، تريدين، تستطيعين، تودّين) ولا تسألها عن ذلك مرة أخرى. " +
+        "الصوت لا ينطق الحركات، فلا تعتمد على كسرة الكاف وحدها: فضّل الأفعال التي يظهر فيها التأنيث في الحروف (تريدين، تستطيعين، يمكنكِ أن تسألي)."
+    : "صيغة المخاطبة: الطالب ذكر. خاطبه بصيغة المذكر طوال هذه الجلسة (أنتَ، تريد، تستطيع، تودّ) ولا تسأله عن ذلك مرة أخرى. " +
+        "لا تستخدم صيغة المؤنث معه أبدًا. الصوت لا ينطق الحركات، فلا تعتمد على فتحة الكاف وحدها: فضّل الأفعال التي يظهر فيها التذكير في الحروف (تريد، تستطيع، تودّ أن تسأل).";
 }
 
 /** What the agent does right after its opening line. */
 export function arabicGreetingFollowUp(gender: StudentGender): string {
   if (gender) return `ثم انتظر سؤال الطالب. تحدث بالعربية الفصحى طوال هذه الجلسة. ${arabicAddressNote(gender)}`;
   return "التحية تتضمن سؤالًا عن صيغة المخاطبة. انتظر الإجابة، ثم استخدم الصيغة التي يختارها الطالب " +
-    "(المذكر أو المؤنث) طوال الجلسة دون أن تكرر السؤال، ثم اسأل كيف يمكنك المساعدة في مادة التحول الرقمي. " +
+    "(المذكر أو المؤنث) طوال الجلسة دون أن تكرر السؤال. إذا اختار صيغة الطالب فقل: " +
+    `«${arabicHelpQuestion("male")}» وإذا اختارت صيغة الطالبة فقل: «${arabicHelpQuestion("female")}». ` +
     "لا تفترض الجنس من الاسم أو الصوت. تحدث بالعربية الفصحى طوال هذه الجلسة.";
 }
 
